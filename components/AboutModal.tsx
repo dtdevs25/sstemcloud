@@ -23,12 +23,12 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
 
         {/* Left Column: Photo & Socials */}
         <div className="bg-brand-50 md:w-1/3 p-8 flex flex-col items-center justify-center border-r border-gray-100">
-          <div className="w-40 h-40 rounded-full border-4 border-white shadow-lg overflow-hidden mb-6 bg-gray-200">
+          <div className="w-48 h-48 rounded-full border-4 border-white shadow-lg overflow-hidden mb-6 bg-gray-200">
             {/* Foto do Daniel */}
             <img
               src="/profile.jpg"
               alt="Daniel Santos"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover object-top"
             />
           </div>
 

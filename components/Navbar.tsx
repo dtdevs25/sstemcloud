@@ -37,7 +37,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onLoginClick }) => {
                 <img
                   src="/logo.png"
                   alt="Logo SSTemCloud"
-                  className="h-16 w-auto mr-3 object-contain transition-transform duration-300 group-hover:scale-105"
+                  className="h-12 w-auto mr-3 object-contain transition-transform duration-300 group-hover:scale-105"
                 />
                 <span className="font-extrabold text-2xl text-gray-900 tracking-tight group-hover:text-brand-700 transition-colors">
                   SSTem<span className="text-brand-500">Cloud</span>
