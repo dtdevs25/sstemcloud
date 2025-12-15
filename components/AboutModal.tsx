@@ -54,9 +54,6 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
               Com trajetória sólida no setor industrial, acumulei vivência em empresas de diversos ramos, como graxa, óleo, embalagens plásticas, logística e eletrônicos.
             </p>
             <p>
-              Com trajetória sólida no setor industrial, acumulei vivência em empresas de diversos ramos, como graxa, óleo, embalagens plásticas, logística e eletrônicos.
-            </p>
-            <p>
               Motivado pela necessidade de ter acesso rápido e organizado a materiais referenciais nas empresas onde atuava, criei o drive <strong>SST em Cloud</strong>. Essa ferramenta, além de ter otimizando meu trabalho, se tornou um sucesso, me inspirando a compartilhá-la com a comunidade SST.
             </p>
           </div>
