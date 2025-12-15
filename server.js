@@ -20,7 +20,7 @@ app.use(express.json());
 // Database configuration
 const { Pool } = pg;
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: process.env.DATABASE_URL ? process.env.DATABASE_URL.trim() : undefined,
   // Disable SSL for internal CapRover connections by default
   // To enable, set DB_SSL=true in environment variables
   ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false
