@@ -64,16 +64,16 @@ const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<PageView>('landing');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  
+
   // Payment Modal State
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-  
+
   // State Persistence
   const [logs, setLogs] = useState<AccessLog[]>(() => {
     const saved = localStorage.getItem('sst_logs');
     return saved ? JSON.parse(saved) : [];
   });
-  
+
   const [folders, setFolders] = useState<FolderItem[]>(() => {
     const saved = localStorage.getItem('sst_folders');
     return saved ? JSON.parse(saved) : initialFolders;
@@ -96,17 +96,17 @@ const App: React.FC = () => {
 
     // Fallback para hardcoded master caso o usuario tenha sido deletado por engano no localStorage
     if (!user && email === 'admin@sst.com' && password === 'master123') {
-       const masterUser: User = { id: '0', name: 'Master Fallback', email: 'admin@sst.com', password: 'master123', role: 'admin', createdAt: 'N/A' };
-       setIsAuthenticated(true);
-       setCurrentUser(masterUser);
-       setCurrentPage('admin');
-       return;
+      const masterUser: User = { id: '0', name: 'Master Fallback', email: 'admin@sst.com', password: 'master123', role: 'admin', createdAt: 'N/A' };
+      setIsAuthenticated(true);
+      setCurrentUser(masterUser);
+      setCurrentPage('admin');
+      return;
     }
 
     if (user) {
       setIsAuthenticated(true);
       setCurrentUser(user);
-      
+
       if (user.role === 'admin') {
         setCurrentPage('admin');
       } else {
@@ -171,24 +171,24 @@ const App: React.FC = () => {
   // Routing
   if (isAuthenticated) {
     if (currentPage === 'admin') {
-        return (
-          <AdminDashboard 
-            logs={logs} 
-            folders={folders}
-            users={users}
-            onLogout={handleLogout}
-            onAddFolder={handleAddFolder}
-            onEditFolder={handleEditFolder}
-            onDeleteFolder={handleDeleteFolder}
-            onAddUser={handleAddUser}
-            onEditUser={handleEditUser}
-            onDeleteUser={handleDeleteUser}
-            onResetPassword={handleResetPassword}
-          />
-        );
+      return (
+        <AdminDashboard
+          logs={logs}
+          folders={folders}
+          users={users}
+          onLogout={handleLogout}
+          onAddFolder={handleAddFolder}
+          onEditFolder={handleEditFolder}
+          onDeleteFolder={handleDeleteFolder}
+          onAddUser={handleAddUser}
+          onEditUser={handleEditUser}
+          onDeleteUser={handleDeleteUser}
+          onResetPassword={handleResetPassword}
+        />
+      );
     }
     if (currentPage === 'dashboard') {
-        return <Dashboard folders={folders} onLogout={handleLogout} onFolderClick={logAccess} />;
+      return <Dashboard folders={folders} onLogout={handleLogout} onFolderClick={logAccess} />;
     }
   }
 
@@ -201,7 +201,9 @@ const App: React.FC = () => {
     <div className="min-h-screen bg-white font-sans text-gray-900">
       <Navbar onLoginClick={() => setCurrentPage('login')} />
       <main>
-        <Hero onBuyClick={() => setIsPaymentModalOpen(true)} />
+        <Hero onBuyClick={() => {
+          document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
+        }} />
         <Features />
         <Advantages />
         <SupportSection />
@@ -211,10 +213,10 @@ const App: React.FC = () => {
       </main>
       <Footer />
       <FloatingWhatsApp />
-      
-      <PaymentModal 
-        isOpen={isPaymentModalOpen} 
-        onClose={() => setIsPaymentModalOpen(false)} 
+
+      <PaymentModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
       />
     </div>
   );
