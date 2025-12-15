@@ -54,7 +54,7 @@ export const AboutModal: React.FC<AboutModalProps> = ({ isOpen, onClose }) => {
               Com trajetória sólida no setor industrial, acumulei vivência em empresas de diversos ramos, como graxa, óleo, embalagens plásticas, logística e eletrônicos.
             </p>
             <p>
-              Minha busca por conhecimento me levou à graduação em Engenharia Ambiental e pós-graduação em Engenharia de Segurança do Trabalho. Essa jornada me consolidou como um profissional completo e dedicado na área de SST.
+              Com trajetória sólida no setor industrial, acumulei vivência em empresas de diversos ramos, como graxa, óleo, embalagens plásticas, logística e eletrônicos.
             </p>
             <p>
               Motivado pela necessidade de ter acesso rápido e organizado a materiais referenciais nas empresas onde atuava, criei o drive <strong>SST em Cloud</strong>. Essa ferramenta, além de ter otimizando meu trabalho, se tornou um sucesso, me inspirando a compartilhá-la com a comunidade SST.
