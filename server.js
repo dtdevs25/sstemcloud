@@ -30,7 +30,7 @@ pool.connect((err, client, release) => {
     console.warn('Error connecting to database:', err.message);
   } else {
     console.log('Connected to database successfully');
-    
+
     // Initialize tables
     const initSql = `
       CREATE TABLE IF NOT EXISTS users (
@@ -79,7 +79,7 @@ app.use(express.static(path.join(__dirname, 'dist')));
 
 // The "catchall" handler: for any request that doesn't
 // match one above, send back React's index.html file.
-app.get('*', (req, res) => {
+app.get(/^(?!\/api).*/, (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
