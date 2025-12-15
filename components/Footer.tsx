@@ -9,21 +9,13 @@ export const Footer: React.FC = () => {
         <div className="flex flex-col md:flex-row items-center justify-center gap-12 mb-10">
 
           {/* Badge Moderno e Clean */}
+          {/* Badge Imagem */}
           <div className="flex-shrink-0 mr-4">
-            <div className="relative group">
-              <div className="absolute inset-0 bg-yellow-400 rounded-full blur-xl opacity-20 group-hover:opacity-40 transition-opacity"></div>
-              <div className="relative bg-gradient-to-br from-yellow-400 to-yellow-600 w-32 h-32 rounded-3xl rotate-3 shadow-xl flex items-center justify-center transform group-hover:-rotate-3 transition-all duration-500">
-                <div className="absolute inset-1 bg-white rounded-2xl flex flex-col items-center justify-center border border-gray-100">
-                  <ShieldCheck className="w-10 h-10 text-yellow-500 mb-1" />
-                  <span className="text-4xl font-black text-gray-900 leading-none">7</span>
-                  <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Dias</span>
-                </div>
-              </div>
-              {/* Etiqueta Flutuante */}
-              <div className="absolute -bottom-3 -right-3 bg-gray-900 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
-                100% GARANTIDO
-              </div>
-            </div>
+            <img
+              src="https://algodaocru.com.br/wp-content/uploads/2017/10/selo-de-garantia-7-dias-1.png"
+              alt="Garantia de 7 Dias"
+              className="w-32 h-auto object-contain hover:scale-105 transition-transform duration-300"
+            />
           </div>
 
           {/* Texto de Garantia */}
