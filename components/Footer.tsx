@@ -10,11 +10,11 @@ export const Footer: React.FC = () => {
 
           {/* Badge Moderno e Clean */}
           {/* Badge Imagem */}
-          <div className="flex-shrink-0 mr-4">
+          <div className="flex-shrink-0 mr-10">
             <img
               src="https://algodaocru.com.br/wp-content/uploads/2017/10/selo-de-garantia-7-dias-1.png"
               alt="Garantia de 7 Dias"
-              className="w-32 h-auto object-contain hover:scale-105 transition-transform duration-300"
+              className="w-44 h-auto object-contain hover:scale-105 transition-transform duration-300"
             />
           </div>
 
@@ -35,12 +35,6 @@ export const Footer: React.FC = () => {
           <p className="text-gray-900 font-medium text-sm">
             &copy; SST EM CLOUD {new Date().getFullYear()} | Todos os direitos reservados.
           </p>
-          <div className="flex justify-center space-x-6 mt-4 opacity-70">
-            <a href="https://www.youtube.com/@PapodeSST" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-red-600 transition-colors">Youtube</a>
-            <a href="https://www.instagram.com/sstemcloud/" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-pink-600 transition-colors">Instagram</a>
-            <a href="https://www.linkedin.com/company/sst-em-cloud" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-blue-700 transition-colors">Linkedin</a>
-            <a href="https://www.facebook.com/SSTemCLOUD/" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-blue-600 transition-colors">Facebook</a>
-          </div>
         </div>
       </div>
     </footer>

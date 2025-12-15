@@ -51,9 +51,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) =
             {/* OPÇÃO 1: HOTMART */}
             <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:border-orange-200 hover:shadow-md transition-all flex flex-col">
 
-              <div className="mb-6 flex justify-center">
-                <img src="https://i.pinimg.com/736x/63/bb/dc/63bbdca7af4430b13d271eab29287dcb.jpg" alt="Hotmart" className="h-8 md:h-10 opacity-80 grayscale hover:grayscale-0 transition-all" />
-              </div>
+              <img src="https://i.pinimg.com/736x/63/bb/dc/63bbdca7af4430b13d271eab29287dcb.jpg" alt="Hotmart" className="h-12 md:h-14 transition-all" />
 
               <div className="flex items-center gap-3 mb-4">
                 <div className="bg-orange-100 p-3 rounded-xl text-orange-600">
