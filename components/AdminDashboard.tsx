@@ -88,6 +88,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [editingFolder, setEditingFolder] = useState<FolderItem | null>(null);
   const [folderForm, setFolderForm] = useState({ name: '', url: '', theme: 'green' as FolderTheme });
 
+  // --- Delete Confirmation Modal State ---
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [folderToDelete, setFolderToDelete] = useState<FolderItem | null>(null);
+
   // --- User Modal States ---
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -121,8 +125,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setIsFolderModalOpen(false);
   };
 
-  const handleDeleteFolderAction = (id: number) => {
-    if (window.confirm('Tem certeza que deseja excluir esta pasta?')) onDeleteFolder(id);
+  // Abrir modal de confirmação de exclusão
+  const handleOpenDeleteModal = (folder: FolderItem) => {
+    setFolderToDelete(folder);
+    setIsDeleteModalOpen(true);
+  };
+
+  // Confirmar exclusão
+  const handleConfirmDelete = () => {
+    if (folderToDelete) {
+      onDeleteFolder(folderToDelete.id);
+      setFolderToDelete(null);
+      setIsDeleteModalOpen(false);
+    }
   };
 
   // --- Handlers Users ---
@@ -348,7 +363,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           <Edit2 size={16} />
                         </button>
                         <button
-                          onClick={(e) => { e.stopPropagation(); handleDeleteFolderAction(folder.id); }}
+                          onClick={(e) => { e.stopPropagation(); handleOpenDeleteModal(folder); }}
                           className="p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
                           title="Excluir Pasta"
                         >
@@ -426,7 +441,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                 <Edit2 size={18} />
                               </button>
                               <button
-                                onClick={() => handleDeleteFolderAction(folder.id)}
+                                onClick={() => handleOpenDeleteModal(folder)}
                                 className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                 title="Excluir"
                               >
@@ -719,6 +734,55 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* --- DELETE CONFIRMATION MODAL --- */}
+      {isDeleteModalOpen && folderToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 bg-red-50">
+              <h3 className="font-bold text-lg text-red-700 flex items-center gap-2">
+                <Trash2 size={20} />
+                Confirmar Exclusão
+              </h3>
+            </div>
+
+            <div className="p-6">
+              <div className="bg-red-100 border border-red-200 rounded-xl p-4 mb-4">
+                <p className="text-red-800 font-medium text-sm">
+                  ⚠️ <strong>Atenção:</strong> Esta ação não pode ser desfeita!
+                </p>
+              </div>
+
+              <p className="text-gray-700 mb-2">
+                Você está prestes a excluir a pasta:
+              </p>
+              <p className="font-bold text-gray-900 text-lg mb-4 bg-gray-100 p-3 rounded-lg">
+                📁 {folderToDelete.name}
+              </p>
+              <p className="text-gray-600 text-sm">
+                A pasta será <strong>permanentemente removida</strong> do banco de dados e todos os usuários perderão acesso a ela.
+              </p>
+            </div>
+
+            <div className="px-6 pb-6 flex gap-3">
+              <button
+                type="button"
+                onClick={() => { setIsDeleteModalOpen(false); setFolderToDelete(null); }}
+                className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                className="flex-1 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-colors flex items-center justify-center gap-2"
+              >
+                <Trash2 size={18} /> Excluir Permanentemente
+              </button>
+            </div>
           </div>
         </div>
       )}

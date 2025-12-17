@@ -161,18 +161,59 @@ const App: React.FC = () => {
     setLogs((prevLogs) => [...prevLogs, newLog]);
   };
 
-  // --- Folder Management (CRUD) ---
-  const handleAddFolder = (newFolder: Omit<FolderItem, 'id'>) => {
-    const nextId = folders.length > 0 ? Math.max(...folders.map(f => f.id)) + 1 : 1;
-    setFolders([...folders, { ...newFolder, id: nextId }]);
+  // --- Folder Management (CRUD) - Conectado ao Banco de Dados ---
+  const handleAddFolder = async (newFolder: Omit<FolderItem, 'id'>) => {
+    try {
+      const response = await fetch('/api/folders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newFolder)
+      });
+      const createdFolder = await response.json();
+      if (createdFolder.id) {
+        setFolders([...folders, {
+          id: createdFolder.id,
+          name: createdFolder.name,
+          url: createdFolder.url || '#',
+          theme: createdFolder.theme
+        }]);
+      }
+    } catch (error) {
+      console.error('Error creating folder:', error);
+      // Fallback para localStorage
+      const nextId = folders.length > 0 ? Math.max(...folders.map(f => f.id)) + 1 : 1;
+      setFolders([...folders, { ...newFolder, id: nextId }]);
+    }
   };
 
-  const handleEditFolder = (id: number, updatedData: Partial<FolderItem>) => {
-    setFolders(folders.map(f => f.id === id ? { ...f, ...updatedData } : f));
+  const handleEditFolder = async (id: number, updatedData: Partial<FolderItem>) => {
+    try {
+      const folderToUpdate = folders.find(f => f.id === id);
+      if (!folderToUpdate) return;
+
+      const updatedFolder = { ...folderToUpdate, ...updatedData };
+      await fetch(`/api/folders/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedFolder)
+      });
+      setFolders(folders.map(f => f.id === id ? { ...f, ...updatedData } : f));
+    } catch (error) {
+      console.error('Error updating folder:', error);
+      // Fallback para localStorage
+      setFolders(folders.map(f => f.id === id ? { ...f, ...updatedData } : f));
+    }
   };
 
-  const handleDeleteFolder = (id: number) => {
-    setFolders(folders.filter(f => f.id !== id));
+  const handleDeleteFolder = async (id: number) => {
+    try {
+      await fetch(`/api/folders/${id}`, { method: 'DELETE' });
+      setFolders(folders.filter(f => f.id !== id));
+    } catch (error) {
+      console.error('Error deleting folder:', error);
+      // Fallback para localStorage
+      setFolders(folders.filter(f => f.id !== id));
+    }
   };
 
   // --- User Management (CRUD) ---
