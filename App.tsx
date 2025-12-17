@@ -248,22 +248,71 @@ const App: React.FC = () => {
     }
   };
 
-  // --- User Management (CRUD) ---
-  const handleAddUser = (newUser: Omit<User, 'id' | 'createdAt'>) => {
-    const user: User = {
-      ...newUser,
-      id: Date.now().toString(),
-      createdAt: new Date().toLocaleDateString('pt-BR')
-    };
-    setUsers([...users, user]);
+  // --- User Management (CRUD) - Conectado ao Banco de Dados ---
+  const handleAddUser = async (newUser: Omit<User, 'id' | 'createdAt'>) => {
+    try {
+      const response = await fetch('/api/auth/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newUser)
+      });
+      const data = await response.json();
+
+      if (data.success && data.user) {
+        const createdUser: User = {
+          id: data.user.id.toString(),
+          name: data.user.name,
+          email: data.user.email,
+          password: '', // Nunca armazenar senha
+          role: data.user.role,
+          createdAt: new Date(data.user.created_at).toLocaleDateString('pt-BR')
+        };
+        setUsers([...users, createdUser]);
+        alert('Usuário criado com sucesso!');
+      } else if (data.error) {
+        alert('Erro: ' + data.error);
+      }
+    } catch (error) {
+      console.error('Error creating user:', error);
+      // Fallback para localStorage
+      const user: User = {
+        ...newUser,
+        id: Date.now().toString(),
+        createdAt: new Date().toLocaleDateString('pt-BR')
+      };
+      setUsers([...users, user]);
+    }
   };
 
-  const handleEditUser = (id: string, updatedData: Partial<User>) => {
-    setUsers(users.map(u => u.id === id ? { ...u, ...updatedData } : u));
+  const handleEditUser = async (id: string, updatedData: Partial<User>) => {
+    try {
+      await fetch(`/api/auth/users/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedData)
+      });
+      setUsers(users.map(u => u.id === id ? { ...u, ...updatedData } : u));
+    } catch (error) {
+      console.error('Error updating user:', error);
+      setUsers(users.map(u => u.id === id ? { ...u, ...updatedData } : u));
+    }
   };
 
-  const handleDeleteUser = (id: string) => {
-    setUsers(users.filter(u => u.id !== id));
+  const handleDeleteUser = async (id: string) => {
+    try {
+      const response = await fetch(`/api/auth/users/${id}`, { method: 'DELETE' });
+      const data = await response.json();
+
+      if (data.error) {
+        alert('Erro: ' + data.error);
+        return;
+      }
+
+      setUsers(users.filter(u => u.id !== id));
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      setUsers(users.filter(u => u.id !== id));
+    }
   };
 
   const handleResetPassword = (email: string) => {
