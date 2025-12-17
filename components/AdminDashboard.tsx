@@ -88,9 +88,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [editingFolder, setEditingFolder] = useState<FolderItem | null>(null);
   const [folderForm, setFolderForm] = useState({ name: '', url: '', theme: 'green' as FolderTheme });
 
-  // --- Delete Confirmation Modal State ---
+  // --- Delete Confirmation Modal State (Folders) ---
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [folderToDelete, setFolderToDelete] = useState<FolderItem | null>(null);
+
+  // --- Delete Confirmation Modal State (Users) ---
+  const [isDeleteUserModalOpen, setIsDeleteUserModalOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
 
   // --- User Modal States ---
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
@@ -170,8 +174,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setIsUserModalOpen(false);
   };
 
-  const handleDeleteUserAction = (id: string) => {
-    if (window.confirm('Tem certeza? O usuário perderá o acesso imediatamente.')) onDeleteUser(id);
+  // Abrir modal de confirmação de exclusão de usuário
+  const handleOpenDeleteUserModal = (user: User) => {
+    setUserToDelete(user);
+    setIsDeleteUserModalOpen(true);
+  };
+
+  // Confirmar exclusão de usuário
+  const handleConfirmDeleteUser = () => {
+    if (userToDelete) {
+      onDeleteUser(userToDelete.id);
+      setUserToDelete(null);
+      setIsDeleteUserModalOpen(false);
+    }
   };
 
   return (
@@ -554,7 +569,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             </button>
                             {user.role !== 'admin' && (
                               <button
-                                onClick={() => handleDeleteUserAction(user.id)}
+                                onClick={() => handleOpenDeleteUserModal(user)}
                                 className="text-red-600 hover:text-red-900 p-2 hover:bg-red-50 rounded-lg transition-colors"
                                 title="Excluir Usuário"
                               >
@@ -781,6 +796,56 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 className="flex-1 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-colors flex items-center justify-center gap-2"
               >
                 <Trash2 size={18} /> Excluir Permanentemente
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- DELETE USER CONFIRMATION MODAL --- */}
+      {isDeleteUserModalOpen && userToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-100 bg-red-50">
+              <h3 className="font-bold text-lg text-red-700 flex items-center gap-2">
+                <Trash2 size={20} />
+                Confirmar Exclusão de Usuário
+              </h3>
+            </div>
+
+            <div className="p-6">
+              <div className="bg-red-100 border border-red-200 rounded-xl p-4 mb-4">
+                <p className="text-red-800 font-medium text-sm">
+                  ⚠️ <strong>Atenção:</strong> Esta ação não pode ser desfeita!
+                </p>
+              </div>
+
+              <p className="text-gray-700 mb-2">
+                Você está prestes a excluir o usuário:
+              </p>
+              <div className="bg-gray-100 p-3 rounded-lg mb-4">
+                <p className="font-bold text-gray-900">{userToDelete.name}</p>
+                <p className="text-gray-600 text-sm">{userToDelete.email}</p>
+              </div>
+              <p className="text-gray-600 text-sm">
+                O usuário <strong>perderá acesso imediatamente</strong> ao sistema.
+              </p>
+            </div>
+
+            <div className="px-6 pb-6 flex gap-3">
+              <button
+                type="button"
+                onClick={() => { setIsDeleteUserModalOpen(false); setUserToDelete(null); }}
+                className="flex-1 px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDeleteUser}
+                className="flex-1 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-colors flex items-center justify-center gap-2"
+              >
+                <Trash2 size={18} /> Excluir Usuário
               </button>
             </div>
           </div>
