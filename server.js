@@ -175,15 +175,23 @@ app.post('/api/auth/login', async (req, res) => {
 
     const user = result.rows[0];
 
+    console.log('User found:', user.name, user.email);
+    console.log('Password hash from DB length:', user.password_hash?.length);
+    console.log('Password hash first 20 chars:', user.password_hash?.substring(0, 20));
+
     // Check if account is locked
     if (user.locked_until && new Date(user.locked_until) > new Date()) {
+      console.log('Account is locked');
       return res.status(423).json({ error: 'Conta temporariamente bloqueada. Tente mais tarde.' });
     }
 
     // Verify password
+    console.log('Comparing password...');
     const isValid = await bcrypt.compare(password, user.password_hash);
+    console.log('Password valid:', isValid);
 
     if (!isValid) {
+      console.log('Password comparison failed');
       recordLoginAttempt(ip);
 
       // Update login attempts in DB
@@ -194,6 +202,8 @@ app.post('/api/auth/login', async (req, res) => {
 
       return res.status(401).json({ error: 'Email ou senha inválidos' });
     }
+
+    console.log('Login successful!');
 
     // Success - clear rate limit and reset login attempts
     clearLoginAttempts(ip);
