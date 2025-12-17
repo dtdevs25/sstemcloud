@@ -239,12 +239,16 @@ const App: React.FC = () => {
           url: createdFolder.url || '#',
           theme: createdFolder.theme
         }]);
+        showToast('Pasta criada com sucesso!', 'success');
+      } else if (createdFolder.error) {
+        showToast('Erro: ' + createdFolder.error, 'error');
       }
     } catch (error) {
       console.error('Error creating folder:', error);
       // Fallback para localStorage
       const nextId = folders.length > 0 ? Math.max(...folders.map(f => f.id)) + 1 : 1;
       setFolders([...folders, { ...newFolder, id: nextId }]);
+      showToast('Pasta criada localmente!', 'success');
     }
   };
 
@@ -260,6 +264,7 @@ const App: React.FC = () => {
         body: JSON.stringify(updatedFolder)
       });
       setFolders(folders.map(f => f.id === id ? { ...f, ...updatedData } : f));
+      showToast('Pasta atualizada!', 'success');
     } catch (error) {
       console.error('Error updating folder:', error);
       // Fallback para localStorage
@@ -271,6 +276,7 @@ const App: React.FC = () => {
     try {
       await fetch(`/api/folders/${id}`, { method: 'DELETE' });
       setFolders(folders.filter(f => f.id !== id));
+      showToast('Pasta removida!', 'success');
     } catch (error) {
       console.error('Error deleting folder:', error);
       // Fallback para localStorage
@@ -377,8 +383,8 @@ const App: React.FC = () => {
               style={{ animation: 'slideIn 0.3s ease-out forwards' }}
             >
               <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border shadow-2xl backdrop-blur-sm ${toast.type === 'success'
-                  ? 'bg-green-50 border-green-200'
-                  : 'bg-red-50 border-red-200'
+                ? 'bg-green-50 border-green-200'
+                : 'bg-red-50 border-red-200'
                 }`}>
                 {toast.type === 'success'
                   ? <CheckCircle2 className="w-5 h-5 text-green-500" />
