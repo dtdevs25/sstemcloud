@@ -82,6 +82,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   // --- View States ---
   const [folderViewMode, setFolderViewMode] = useState<'grid' | 'list'>('grid');
   const [userSearchTerm, setUserSearchTerm] = useState('');
+  const [logSearchTerm, setLogSearchTerm] = useState('');
+
+  // Filter Logs
+  const filteredLogs = logs.filter(log =>
+    log.user.toLowerCase().includes(logSearchTerm.toLowerCase()) ||
+    log.folderName.toLowerCase().includes(logSearchTerm.toLowerCase()) ||
+    log.timestamp.toLowerCase().includes(logSearchTerm.toLowerCase())
+  );
 
   // --- Folder Modal States ---
   const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
@@ -254,24 +262,41 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <h1 className="text-2xl font-bold text-slate-800">Logs de Acesso</h1>
                 <p className="text-slate-500">Acompanhe quem está acessando o sistema.</p>
               </div>
-              <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4 flex-wrap">
-                <div className="text-center px-4 border-r border-slate-100">
-                  <span className="block text-2xl font-black text-sky-600">{siteVisits.total}</span>
-                  <span className="text-xs text-slate-500 uppercase font-bold flex items-center gap-1">
-                    <Eye size={12} /> Visitas Total
-                  </span>
+
+              <div className="flex flex-col sm:flex-row gap-4">
+                {/* Search Bar for Logs */}
+                <div className="relative group w-full sm:w-64">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Search className="h-4 w-4 text-slate-400 group-focus-within:text-sky-500 transition-colors" />
+                  </div>
+                  <input
+                    type="text"
+                    className="block w-full pl-10 pr-3 py-2.5 border border-slate-200 rounded-lg leading-5 bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all sm:text-sm shadow-sm"
+                    placeholder="Buscar nos logs..."
+                    value={logSearchTerm}
+                    onChange={(e) => setLogSearchTerm(e.target.value)}
+                  />
                 </div>
-                <div className="text-center px-4 border-r border-slate-100">
-                  <span className="block text-2xl font-black text-emerald-600">{siteVisits.today}</span>
-                  <span className="text-xs text-slate-500 uppercase font-bold">Hoje</span>
-                </div>
-                <div className="text-center px-4 border-r border-slate-100">
-                  <span className="block text-2xl font-black text-slate-900">{logs.length}</span>
-                  <span className="text-xs text-slate-500 uppercase font-bold">Logs</span>
-                </div>
-                <div className="text-center px-4">
-                  <span className="block text-2xl font-black text-green-600">ON</span>
-                  <span className="text-xs text-slate-500 uppercase font-bold">Sistema</span>
+
+                <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4 flex-wrap">
+                  <div className="text-center px-4 border-r border-slate-100">
+                    <span className="block text-2xl font-black text-sky-600">{siteVisits.total}</span>
+                    <span className="text-xs text-slate-500 uppercase font-bold flex items-center gap-1">
+                      <Eye size={12} /> Visitas Total
+                    </span>
+                  </div>
+                  <div className="text-center px-4 border-r border-slate-100">
+                    <span className="block text-2xl font-black text-emerald-600">{siteVisits.today}</span>
+                    <span className="text-xs text-slate-500 uppercase font-bold">Hoje</span>
+                  </div>
+                  <div className="text-center px-4 border-r border-slate-100">
+                    <span className="block text-2xl font-black text-slate-900">{filteredLogs.length}</span>
+                    <span className="text-xs text-slate-500 uppercase font-bold">Logs</span>
+                  </div>
+                  <div className="text-center px-4">
+                    <span className="block text-2xl font-black text-green-600">ON</span>
+                    <span className="text-xs text-slate-500 uppercase font-bold">Sistema</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -288,7 +313,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-slate-100">
-                    {[...logs].reverse().map((log, index) => (
+                    {[...filteredLogs].reverse().map((log, index) => (
                       <tr key={index} className="hover:bg-slate-50">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
@@ -416,13 +441,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </div>
             ) : (
               /* LIST VIEW */
-              <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                <table className="min-w-full divide-y divide-slate-100">
+              <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto">
+                <table className="w-full divide-y divide-slate-100" style={{ minWidth: '600px' }}>
                   <thead className="bg-slate-50">
                     <tr>
                       <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Nome da Pasta</th>
-                      <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider hidden sm:table-cell">Link de Destino</th>
-                      <th scope="col" className="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Ações</th>
+                      <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Link de Destino</th>
+                      <th scope="col" className="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider" style={{ minWidth: '120px' }}>Ações</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-slate-100">
@@ -440,7 +465,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                               </div>
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap hidden sm:table-cell">
+                          <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center gap-2 text-sm text-slate-500 max-w-xs truncate">
                               <ExternalLink size={14} />
                               <span className="truncate">{folder.url || 'Não configurado'}</span>
