@@ -118,31 +118,63 @@ const App: React.FC = () => {
     }
   }, [currentPage]);
 
-  // Login Logic
-  const handleLogin = (email: string, password: string) => {
-    // Busca usuário
-    const user = users.find(u => u.email === email && u.password === password);
+  // Login Logic - Conectado ao Banco de Dados com Segurança
+  const handleLogin = async (email: string, password: string) => {
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
 
-    // Fallback para hardcoded master caso o usuario tenha sido deletado por engano no localStorage
-    if (!user && email === 'admin@sst.com' && password === 'master123') {
-      const masterUser: User = { id: '0', name: 'Master Fallback', email: 'admin@sst.com', password: 'master123', role: 'admin', createdAt: 'N/A' };
-      setIsAuthenticated(true);
-      setCurrentUser(masterUser);
-      setCurrentPage('admin');
-      return;
-    }
+      const data = await response.json();
 
-    if (user) {
-      setIsAuthenticated(true);
-      setCurrentUser(user);
+      if (data.success && data.user) {
+        // Login bem sucedido via API
+        const apiUser: User = {
+          id: data.user.id,
+          name: data.user.name,
+          email: data.user.email,
+          password: '', // Nunca armazenar senha
+          role: data.user.role,
+          createdAt: new Date(data.user.createdAt).toLocaleDateString('pt-BR')
+        };
 
-      if (user.role === 'admin') {
-        setCurrentPage('admin');
-      } else {
-        setCurrentPage('dashboard');
+        setIsAuthenticated(true);
+        setCurrentUser(apiUser);
+
+        if (apiUser.role === 'admin') {
+          setCurrentPage('admin');
+        } else {
+          setCurrentPage('dashboard');
+        }
+        return;
       }
-    } else {
-      alert('E-mail ou senha inválidos.');
+
+      // Se a API retornou erro
+      if (data.error) {
+        alert(data.error);
+        return;
+      }
+
+    } catch (error) {
+      console.log('API not available, trying local fallback');
+
+      // Fallback para localStorage se a API não estiver disponível
+      const user = users.find(u => u.email === email && u.password === password);
+
+      if (user) {
+        setIsAuthenticated(true);
+        setCurrentUser(user);
+
+        if (user.role === 'admin') {
+          setCurrentPage('admin');
+        } else {
+          setCurrentPage('dashboard');
+        }
+      } else {
+        alert('E-mail ou senha inválidos.');
+      }
     }
   };
 
