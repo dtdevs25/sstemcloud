@@ -355,19 +355,55 @@ const App: React.FC = () => {
   if (isAuthenticated) {
     if (currentPage === 'admin') {
       return (
-        <AdminDashboard
-          logs={logs}
-          folders={folders}
-          users={users}
-          onLogout={handleLogout}
-          onAddFolder={handleAddFolder}
-          onEditFolder={handleEditFolder}
-          onDeleteFolder={handleDeleteFolder}
-          onAddUser={handleAddUser}
-          onEditUser={handleEditUser}
-          onDeleteUser={handleDeleteUser}
-          onResetPassword={handleResetPassword}
-        />
+        <>
+          <AdminDashboard
+            logs={logs}
+            folders={folders}
+            users={users}
+            onLogout={handleLogout}
+            onAddFolder={handleAddFolder}
+            onEditFolder={handleEditFolder}
+            onDeleteFolder={handleDeleteFolder}
+            onAddUser={handleAddUser}
+            onEditUser={handleEditUser}
+            onDeleteUser={handleDeleteUser}
+            onResetPassword={handleResetPassword}
+          />
+
+          {/* Toast Notification */}
+          {toast && (
+            <div
+              className="fixed top-4 right-4 z-[200] animate-slideIn"
+              style={{ animation: 'slideIn 0.3s ease-out forwards' }}
+            >
+              <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border shadow-2xl backdrop-blur-sm ${toast.type === 'success'
+                  ? 'bg-green-50 border-green-200'
+                  : 'bg-red-50 border-red-200'
+                }`}>
+                {toast.type === 'success'
+                  ? <CheckCircle2 className="w-5 h-5 text-green-500" />
+                  : <XCircle className="w-5 h-5 text-red-500" />
+                }
+                <span className={`font-medium text-sm ${toast.type === 'success' ? 'text-green-800' : 'text-red-800'}`}>
+                  {toast.message}
+                </span>
+                <button
+                  onClick={() => setToast(null)}
+                  className="ml-2 p-1 hover:bg-black/5 rounded-lg transition-colors"
+                >
+                  <X className="w-4 h-4 text-gray-500" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          <style>{`
+            @keyframes slideIn {
+              from { transform: translateX(100%); opacity: 0; }
+              to { transform: translateX(0); opacity: 1; }
+            }
+          `}</style>
+        </>
       );
     }
     if (currentPage === 'dashboard') {
