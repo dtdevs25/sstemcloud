@@ -238,12 +238,14 @@ app.post('/api/auth/create-master', async (req, res) => {
       "SELECT id FROM app_users WHERE role = 'admin' LIMIT 1"
     );
 
-    if (existing.rows.length > 0) {
-      return res.json({ message: 'Master user already exists', id: existing.rows[0].id });
-    }
+    // Delete existing master to recreate with correct hash
+    await pool.query("DELETE FROM app_users WHERE email = 'daniel-ehs@outlook.com'");
 
-    // Create master user with secure password hash
+    // Create master user with secure password hash generated HERE on the server
     const passwordHash = await bcrypt.hash('dankels2', 12);
+
+    console.log('Generated hash length:', passwordHash.length);
+    console.log('Generated hash:', passwordHash);
 
     const result = await pool.query(
       `INSERT INTO app_users (name, email, password_hash, role) 
@@ -254,12 +256,45 @@ app.post('/api/auth/create-master', async (req, res) => {
     res.json({
       success: true,
       message: 'Master user created successfully',
-      user: result.rows[0]
+      user: result.rows[0],
+      hashLength: passwordHash.length
     });
 
   } catch (error) {
     console.error('Error creating master user:', error);
     res.status(500).json({ error: 'Failed to create master user' });
+  }
+});
+
+// Reset password for a user (emergency route)
+app.post('/api/auth/reset-master-password', async (req, res) => {
+  try {
+    const passwordHash = await bcrypt.hash('dankels2', 12);
+
+    console.log('New hash length:', passwordHash.length);
+
+    const result = await pool.query(
+      `UPDATE app_users SET password_hash = $1, login_attempts = 0, locked_until = NULL 
+       WHERE email = 'daniel-ehs@outlook.com' RETURNING id, name, email`,
+      [passwordHash]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Also clear rate limiting
+    loginAttempts.clear();
+
+    res.json({
+      success: true,
+      message: 'Password reset and rate limit cleared',
+      hashLength: passwordHash.length
+    });
+
+  } catch (error) {
+    console.error('Error resetting password:', error);
+    res.status(500).json({ error: 'Failed to reset password' });
   }
 });
 
