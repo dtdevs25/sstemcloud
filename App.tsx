@@ -117,6 +117,27 @@ const App: React.FC = () => {
       .catch(err => console.log('Using local folders - API not available'));
   }, []);
 
+  // Buscar usuários do banco de dados
+  useEffect(() => {
+    fetch('/api/auth/users')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          // Converter formato do banco para formato do app
+          const dbUsers = data.map((u: any) => ({
+            id: u.id.toString(),
+            name: u.name,
+            email: u.email,
+            password: '', // Nunca armazenar senha
+            role: u.role,
+            createdAt: u.created_at ? new Date(u.created_at).toLocaleDateString('pt-BR') : 'N/A'
+          }));
+          setUsers(dbUsers);
+        }
+      })
+      .catch(err => console.log('Using local users - API not available'));
+  }, []);
+
   // Registrar visita ao site (uma vez por sessão)
   useEffect(() => {
     const hasVisited = sessionStorage.getItem('sst_visited');
@@ -162,7 +183,7 @@ const App: React.FC = () => {
 
       // Se a API retornou erro
       if (data.error) {
-        alert(data.error);
+        showToast(data.error, 'error');
         return;
       }
 
@@ -182,7 +203,7 @@ const App: React.FC = () => {
           setCurrentPage('dashboard');
         }
       } else {
-        alert('E-mail ou senha inválidos.');
+        showToast('E-mail ou senha inválidos.', 'error');
       }
     }
   };
@@ -390,8 +411,8 @@ const App: React.FC = () => {
           }}
         >
           <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border shadow-lg backdrop-blur-sm ${toast.type === 'success'
-              ? 'bg-green-50 border-green-200'
-              : 'bg-red-50 border-red-200'
+            ? 'bg-green-50 border-green-200'
+            : 'bg-red-50 border-red-200'
             }`}>
             {toast.type === 'success'
               ? <CheckCircle2 className="w-5 h-5 text-green-500" />
