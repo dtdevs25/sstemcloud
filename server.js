@@ -132,9 +132,12 @@ app.post('/api/auth/login', async (req, res) => {
   try {
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
 
+    console.log('Login attempt from IP:', ip);
+
     // Check rate limit
     const rateCheck = checkRateLimit(ip);
     if (!rateCheck.allowed) {
+      console.log('Rate limit exceeded for IP:', ip);
       return res.status(429).json({
         error: `Muitas tentativas. Tente novamente em ${rateCheck.timeLeft} minutos.`,
         locked: true
@@ -143,13 +146,18 @@ app.post('/api/auth/login', async (req, res) => {
 
     const { email, password } = req.body;
 
+    console.log('Login attempt for email:', email);
+
     // Input validation
     if (!email || !password) {
+      console.log('Missing email or password');
       return res.status(400).json({ error: 'Email e senha são obrigatórios' });
     }
 
     // Sanitize email (basic)
     const sanitizedEmail = email.toLowerCase().trim();
+
+    console.log('Searching for user with email:', sanitizedEmail);
 
     // Query user (parameterized query - safe from SQL injection)
     const result = await pool.query(
@@ -157,7 +165,10 @@ app.post('/api/auth/login', async (req, res) => {
       [sanitizedEmail]
     );
 
+    console.log('Query result rows:', result.rows.length);
+
     if (result.rows.length === 0) {
+      console.log('User not found in database');
       recordLoginAttempt(ip);
       return res.status(401).json({ error: 'Email ou senha inválidos' });
     }
@@ -350,6 +361,20 @@ app.delete('/api/auth/users/:id', async (req, res) => {
 // API Routes
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date() });
+});
+
+// Debug route to check users in database
+app.get('/api/debug/users', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT id, name, email, role FROM app_users');
+    res.json({
+      count: result.rows.length,
+      users: result.rows.map(u => ({ id: u.id, name: u.name, email: u.email, role: u.role }))
+    });
+  } catch (error) {
+    console.error('Debug users error:', error);
+    res.json({ error: error.message, hint: 'Table app_users may not exist' });
+  }
 });
 
 // ============ FOLDERS API ============
