@@ -272,6 +272,11 @@ app.post('/api/auth/reset-master-password', async (req, res) => {
     const passwordHash = await bcrypt.hash('dankels2', 12);
 
     console.log('New hash length:', passwordHash.length);
+    console.log('New hash:', passwordHash);
+
+    // Test immediately if it works
+    const testCompare = await bcrypt.compare('dankels2', passwordHash);
+    console.log('Immediate test compare result:', testCompare);
 
     const result = await pool.query(
       `UPDATE app_users SET password_hash = $1, login_attempts = 0, locked_until = NULL 
@@ -283,18 +288,59 @@ app.post('/api/auth/reset-master-password', async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
+    // Verify what was saved
+    const verify = await pool.query(
+      'SELECT password_hash, LENGTH(password_hash) as len FROM app_users WHERE email = $1',
+      ['daniel-ehs@outlook.com']
+    );
+    console.log('Saved hash length:', verify.rows[0].len);
+    console.log('Saved hash:', verify.rows[0].password_hash);
+
+    // Test compare with saved hash
+    const savedCompare = await bcrypt.compare('dankels2', verify.rows[0].password_hash);
+    console.log('Saved hash compare result:', savedCompare);
+
     // Also clear rate limiting
     loginAttempts.clear();
 
     res.json({
       success: true,
       message: 'Password reset and rate limit cleared',
-      hashLength: passwordHash.length
+      hashLength: passwordHash.length,
+      savedHashLength: verify.rows[0].len,
+      immediateTest: testCompare,
+      savedTest: savedCompare
     });
 
   } catch (error) {
     console.error('Error resetting password:', error);
     res.status(500).json({ error: 'Failed to reset password' });
+  }
+});
+
+// Debug route - test password comparison
+app.get('/api/debug/test-password', async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT password_hash FROM app_users WHERE email = $1',
+      ['daniel-ehs@outlook.com']
+    );
+
+    if (result.rows.length === 0) {
+      return res.json({ error: 'User not found' });
+    }
+
+    const hash = result.rows[0].password_hash;
+    const testResult = await bcrypt.compare('dankels2', hash);
+
+    res.json({
+      hashLength: hash.length,
+      hashStart: hash.substring(0, 30),
+      hashEnd: hash.substring(hash.length - 10),
+      compareResult: testResult
+    });
+  } catch (error) {
+    res.json({ error: error.message });
   }
 });
 
