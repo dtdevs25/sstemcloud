@@ -1,13 +1,80 @@
 import React, { useState, useEffect } from 'react';
 
-// Dados simulados para os 12 cards (3 linhas x 4 colunas)
-const gifCards = Array.from({ length: 12 }).map((_, i) => ({
-  id: i,
-  title: `Material SST ${i + 1}`,
-  description: 'Arquivo editável pronto para download.',
-  // Usei placeholders aqui. Substitua essas URLs pelos links dos seus GIFs reais.
-  image: `https://placehold.co/600x400/f1f5f9/334155?text=GIF+Preview+${i + 1}`, 
-}));
+// Dados dos 12 cards com GIFs reais
+const gifCards = [
+  {
+    id: 0,
+    title: 'Cartaz de Ergonomia',
+    description: 'Material visual para conscientização ergonômica.',
+    image: '/CartazErgonomia.gif',
+  },
+  {
+    id: 1,
+    title: 'Estatística de Acidentes',
+    description: 'Planilha para controle estatístico de acidentes.',
+    image: '/EstatisticaAcidente.gif',
+  },
+  {
+    id: 2,
+    title: 'Gestão de Espaços Confinados',
+    description: 'Sistema completo para gestão de espaços confinados.',
+    image: '/GestãoEspaçosConfinados.gif',
+  },
+  {
+    id: 3,
+    title: 'Gestão do PGR',
+    description: 'Ferramenta para gestão do Programa de Gerenciamento de Riscos.',
+    image: '/GestãoPGR.gif',
+  },
+  {
+    id: 4,
+    title: 'Gestão de Acidentes',
+    description: 'Sistema de gestão e acompanhamento de acidentes.',
+    image: '/GestãodeAcidentes.gif',
+  },
+  {
+    id: 5,
+    title: 'Inspeção de Segurança',
+    description: 'Checklist completo para inspeções de segurança.',
+    image: '/InspeçãodeSegurança.gif',
+  },
+  {
+    id: 6,
+    title: 'Investigação de Acidentes',
+    description: 'Modelo para investigação e análise de acidentes.',
+    image: '/InvestigaçãoAcidente.gif',
+  },
+  {
+    id: 7,
+    title: 'Kanban SST',
+    description: 'Quadro Kanban para gestão de tarefas de SST.',
+    image: '/Kanban.gif',
+  },
+  {
+    id: 8,
+    title: 'Liberação de Trabalho',
+    description: 'Sistema de permissão e liberação de trabalhos.',
+    image: '/LiberaçãodeTrabalho.gif',
+  },
+  {
+    id: 9,
+    title: 'PGR Completo',
+    description: 'Programa de Gerenciamento de Riscos completo.',
+    image: '/PGR.gif',
+  },
+  {
+    id: 10,
+    title: 'Processo Eleitoral CIPA',
+    description: 'Gestão do processo eleitoral da CIPA.',
+    image: '/ProcessoeleitoralCIPA.gif',
+  },
+  {
+    id: 11,
+    title: 'Treinamento de Empilhadeira',
+    description: 'Material para treinamento de operadores de empilhadeira.',
+    image: '/TreinamentoEmpilhadeira.gif',
+  },
+];
 
 export const Features: React.FC = () => {
   const [text, setText] = useState('');
@@ -23,8 +90,8 @@ export const Features: React.FC = () => {
       const i = loopNum % words.length;
       const fullText = words[i];
 
-      setText(isDeleting 
-        ? fullText.substring(0, text.length - 1) 
+      setText(isDeleting
+        ? fullText.substring(0, text.length - 1)
         : fullText.substring(0, text.length + 1)
       );
 
@@ -48,7 +115,7 @@ export const Features: React.FC = () => {
   return (
     <div id="recursos" className="relative py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        
+
         {/* Título Dinâmico */}
         <div className="text-center mb-16">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight min-h-[3.5rem]">
@@ -64,34 +131,34 @@ export const Features: React.FC = () => {
         </div>
 
         {/* Grid de 12 Cards (4 colunas em telas grandes) */}
-        <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {gifCards.map((card) => (
-            <div key={card.id} className="group relative bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden flex flex-col">
-              
+            <div key={card.id} className="group relative rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer bg-white">
+
               {/* Área do GIF/Imagem */}
-              <div className="relative aspect-video overflow-hidden bg-gray-100">
-                <img 
-                  src={card.image} 
-                  alt={card.title} 
-                  className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+              <div className="relative aspect-[4/3] overflow-hidden">
+                <img
+                  src={card.image}
+                  alt={card.title}
+                  className="w-full h-full object-contain transform group-hover:scale-105 transition-transform duration-500"
                 />
-                {/* Overlay no hover */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 flex items-center justify-center">
-                  {/* Opcional: ícone ou texto sobre o GIF no hover */}
-                </div>
               </div>
 
-              {/* Conteúdo do Card - Centralizado */}
-              <div className="p-5 flex flex-col flex-1 items-center text-center">
-                <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-brand-600 transition-colors">
+              {/* Título abaixo da imagem */}
+              <div className="p-3 bg-white">
+                <h3 className="text-sm font-semibold text-gray-800 leading-tight text-center">
                   {card.title}
                 </h3>
-                <p className="text-sm text-gray-500 flex-1">
-                  {card.description}
-                </p>
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Texto Descritivo */}
+        <div className="mt-16 text-center max-w-4xl mx-auto">
+          <p className="text-lg md:text-xl text-gray-600 leading-relaxed">
+            O <span className="font-bold text-gray-900">SST em CLOUD</span> é um diretório completo com milhares de arquivos de Saúde, Segurança do Trabalho e Meio Ambiente armazenado na <span className="font-bold text-brand-600">NUVEM</span>, podendo ser acessado de qualquer dispositivo com acesso a internet.
+          </p>
         </div>
 
       </div>

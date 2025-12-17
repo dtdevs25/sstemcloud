@@ -12,7 +12,7 @@ export const Login: React.FC<LoginProps> = ({ onBack, onLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const handleVerPlanos = () => {
     onBack();
     setTimeout(() => {
@@ -39,36 +39,36 @@ export const Login: React.FC<LoginProps> = ({ onBack, onLogin }) => {
     setIsLoading(true);
     // Simula um delay de rede para UX
     await new Promise(resolve => setTimeout(resolve, 1000));
-    
+
     onLogin(email, password);
     setIsLoading(false);
   };
 
   return (
     <div className="min-h-screen bg-sky-400 flex items-center justify-center p-4 relative overflow-hidden isolate">
-      
+
       {/* Dynamic Background Orbs */}
       <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-purple-600/40 rounded-full blur-[100px] animate-pulse -z-10 mix-blend-multiply"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-teal-400/30 rounded-full blur-[100px] animate-float -z-10 mix-blend-multiply"></div>
       <div className="absolute top-[40%] left-[60%] w-[300px] h-[300px] bg-blue-700/20 rounded-full blur-[80px] -z-10"></div>
 
       {/* Botão Voltar Flutuante */}
-      <button 
+      <button
         onClick={onBack}
         className="absolute top-8 left-8 text-white hover:text-white/80 transition-all flex items-center gap-2 text-sm font-bold group z-50 drop-shadow-md"
       >
         <div className="p-2 bg-white/20 rounded-full group-hover:bg-white/30 backdrop-blur-md transition-all border border-white/20">
-           <ArrowLeft size={20} />
+          <ArrowLeft size={20} />
         </div>
         <span className="opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 group-hover:translate-x-0 shadow-sm">Voltar ao site</span>
       </button>
 
       {/* Modern Glass Card */}
       <div className="w-full max-w-[360px] relative">
-        
+
         {/* Card Body */}
         <div className="bg-white/10 backdrop-blur-2xl border border-white/30 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden relative p-8 animate-fadeIn">
-          
+
           {/* Header Minimalista */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-white/30 to-white/5 shadow-lg mb-4 border border-white/40 backdrop-blur-sm ring-1 ring-white/20">
@@ -79,19 +79,19 @@ export const Login: React.FC<LoginProps> = ({ onBack, onLogin }) => {
           </div>
 
           <form className="space-y-5" onSubmit={handleSubmit}>
-            
+
             {/* Input Moderno 1 */}
             <div className="space-y-1.5">
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-white/90 drop-shadow-sm" />
+                  <Mail className="h-5 w-5 text-sky-500 drop-shadow-sm" />
                 </div>
-                <input 
-                  type="email" 
+                <input
+                  type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full pl-12 pr-4 py-4 bg-black/20 hover:bg-black/30 focus:bg-black/30 border border-white/10 rounded-2xl text-sm text-white placeholder-white/70 font-medium focus:outline-none focus:ring-2 focus:ring-white/40 transition-all duration-300 shadow-inner" 
-                  placeholder="Seu e-mail" 
+                  className="block w-full pl-12 pr-4 py-4 bg-black/20 hover:bg-black/30 focus:bg-black/30 border border-white/10 rounded-2xl text-sm text-white placeholder-white/70 font-medium focus:outline-none focus:ring-2 focus:ring-white/40 transition-all duration-300 shadow-inner"
+                  placeholder="Seu e-mail"
                   required
                 />
               </div>
@@ -101,17 +101,17 @@ export const Login: React.FC<LoginProps> = ({ onBack, onLogin }) => {
             <div className="space-y-1.5">
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-white/90 drop-shadow-sm" />
+                  <Lock className="h-5 w-5 text-sky-500 drop-shadow-sm" />
                 </div>
-                <input 
-                  type={showPassword ? "text" : "password"} 
+                <input
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-12 pr-12 py-4 bg-black/20 hover:bg-black/30 focus:bg-black/30 border border-white/10 rounded-2xl text-sm text-white placeholder-white/70 font-medium focus:outline-none focus:ring-2 focus:ring-white/40 transition-all duration-300 shadow-inner" 
-                  placeholder="Sua senha" 
+                  className="block w-full pl-12 pr-12 py-4 bg-black/20 hover:bg-black/30 focus:bg-black/30 border border-white/10 rounded-2xl text-sm text-white placeholder-white/70 font-medium focus:outline-none focus:ring-2 focus:ring-white/40 transition-all duration-300 shadow-inner"
+                  placeholder="Sua senha"
                   required
                 />
-                <button 
+                <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-4 flex items-center text-white/70 hover:text-white transition-colors focus:outline-none"
@@ -120,7 +120,7 @@ export const Login: React.FC<LoginProps> = ({ onBack, onLogin }) => {
                 </button>
               </div>
               <div className="flex justify-end">
-                <button 
+                <button
                   type="button"
                   onClick={handleForgotPassword}
                   className="text-xs font-bold text-white hover:text-blue-100 transition-colors drop-shadow-sm underline decoration-white/30 hover:decoration-white focus:outline-none"
@@ -131,8 +131,8 @@ export const Login: React.FC<LoginProps> = ({ onBack, onLogin }) => {
             </div>
 
             {/* Botão com Gradiente Azul/Indigo para destaque */}
-            <Button 
-              fullWidth 
+            <Button
+              fullWidth
               type="submit"
               disabled={isLoading}
               className="mt-4 rounded-xl py-4 text-sm font-black uppercase tracking-wider bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-500 hover:to-indigo-600 text-white shadow-xl shadow-blue-900/20 hover:shadow-blue-900/40 hover:-translate-y-0.5 transition-all duration-300 border border-white/10 disabled:opacity-70 disabled:cursor-not-allowed"
@@ -153,8 +153,8 @@ export const Login: React.FC<LoginProps> = ({ onBack, onLogin }) => {
             <p className="text-xs text-white/90 font-semibold mb-3 drop-shadow-sm">
               Não tem acesso?
             </p>
-            <button 
-              onClick={handleVerPlanos} 
+            <button
+              onClick={handleVerPlanos}
               className="text-xs font-bold text-white border-2 border-white/40 px-6 py-2.5 rounded-full hover:bg-white hover:text-blue-600 transition-all tracking-wide uppercase shadow-sm backdrop-blur-sm"
             >
               Ver Planos Disponíveis

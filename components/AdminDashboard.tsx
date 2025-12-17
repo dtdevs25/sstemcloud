@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { LogOut, Search, Activity, Layout, Users, Plus, Edit2, Trash2, Folder, CheckCircle2, FolderOpen, Save, X, Mail, Key, CloudLightning, LayoutGrid, List as ListIcon, Calendar, ExternalLink } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { LogOut, Search, Activity, Layout, Users, Plus, Edit2, Trash2, Folder, CheckCircle2, FolderOpen, Save, X, Mail, Key, CloudLightning, LayoutGrid, List as ListIcon, Calendar, ExternalLink, Eye } from 'lucide-react';
 import { AccessLog, FolderItem, FolderTheme, User } from '../types';
 
 interface AdminDashboardProps {
@@ -53,13 +53,13 @@ const getThemeClasses = (theme: string) => {
   return themes[theme] || themes.green;
 };
 
-export const AdminDashboard: React.FC<AdminDashboardProps> = ({ 
-  logs, 
-  folders, 
+export const AdminDashboard: React.FC<AdminDashboardProps> = ({
+  logs,
+  folders,
   users,
-  onLogout, 
-  onAddFolder, 
-  onEditFolder, 
+  onLogout,
+  onAddFolder,
+  onEditFolder,
   onDeleteFolder,
   onAddUser,
   onEditUser,
@@ -67,7 +67,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onResetPassword
 }) => {
   const [activeTab, setActiveTab] = useState<'logs' | 'content' | 'users'>('logs');
-  
+
+  // --- Site Visits State ---
+  const [siteVisits, setSiteVisits] = useState({ total: 0, today: 0 });
+
+  // Fetch site visits on mount
+  useEffect(() => {
+    fetch('/api/visits')
+      .then(res => res.json())
+      .then(data => setSiteVisits({ total: data.total || 0, today: data.today || 0 }))
+      .catch(() => setSiteVisits({ total: 0, today: 0 }));
+  }, []);
+
   // --- View States ---
   const [folderViewMode, setFolderViewMode] = useState<'grid' | 'list'>('grid');
   const [userSearchTerm, setUserSearchTerm] = useState('');
@@ -83,7 +94,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [userForm, setUserForm] = useState({ name: '', email: '', password: '', role: 'user' as 'user' | 'admin' });
 
   // Filter Users
-  const filteredUsers = users.filter(user => 
+  const filteredUsers = users.filter(user =>
     user.name.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
     user.email.toLowerCase().includes(userSearchTerm.toLowerCase())
   );
@@ -129,17 +140,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   const handleSaveUser = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Se estiver editando e a senha estiver vazia, remove o campo senha do update para não sobrescrever com vazio
     if (editingUser && !userForm.password) {
-       const { password, ...userWithoutPassword } = userForm;
-       onEditUser(editingUser.id, userWithoutPassword);
+      const { password, ...userWithoutPassword } = userForm;
+      onEditUser(editingUser.id, userWithoutPassword);
     } else {
-       if (editingUser) {
-         onEditUser(editingUser.id, userForm);
-       } else {
-         onAddUser(userForm);
-       }
+      if (editingUser) {
+        onEditUser(editingUser.id, userForm);
+      } else {
+        onAddUser(userForm);
+      }
     }
     setIsUserModalOpen(false);
   };
@@ -150,14 +161,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
-      
+
       {/* Header Admin */}
       <header className="bg-slate-900 text-white shadow-lg sticky top-0 z-30 border-b border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          
+
           <div className="flex items-center gap-3">
             <div className="bg-white p-2.5 rounded-xl shadow-lg shadow-blue-900/20">
-                <CloudLightning size={22} className="text-brand-600" strokeWidth={2.5} />
+              <CloudLightning size={22} className="text-brand-600" strokeWidth={2.5} />
             </div>
             <span className="font-extrabold text-xl tracking-wide text-white">
               SSTem<span className="text-sky-300">Cloud</span> <span className="text-slate-400 font-normal text-base ml-1">Admin</span>
@@ -168,7 +179,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <div className="px-3 py-1 bg-slate-800 rounded-full text-xs font-mono text-slate-400 border border-slate-700 hidden sm:block">
               MASTER ACCESS
             </div>
-            <button 
+            <button
               onClick={onLogout}
               className="flex items-center gap-2 text-slate-300 hover:text-white hover:bg-slate-800 px-3 py-2 rounded-lg transition-all"
             >
@@ -181,7 +192,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
+
         {/* Tabs */}
         <div className="flex space-x-1 sm:space-x-4 mb-8 border-b border-slate-200 overflow-x-auto">
           <button
@@ -207,16 +218,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         {/* --- TAB: LOGS --- */}
         {activeTab === 'logs' && (
           <div className="animate-fadeIn">
-             {/* Header Section */}
+            {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
               <div>
                 <h1 className="text-2xl font-bold text-slate-800">Logs de Acesso</h1>
                 <p className="text-slate-500">Acompanhe quem está acessando o sistema.</p>
               </div>
-              <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4">
+              <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center gap-4 flex-wrap">
+                <div className="text-center px-4 border-r border-slate-100">
+                  <span className="block text-2xl font-black text-sky-600">{siteVisits.total}</span>
+                  <span className="text-xs text-slate-500 uppercase font-bold flex items-center gap-1">
+                    <Eye size={12} /> Visitas Total
+                  </span>
+                </div>
+                <div className="text-center px-4 border-r border-slate-100">
+                  <span className="block text-2xl font-black text-emerald-600">{siteVisits.today}</span>
+                  <span className="text-xs text-slate-500 uppercase font-bold">Hoje</span>
+                </div>
                 <div className="text-center px-4 border-r border-slate-100">
                   <span className="block text-2xl font-black text-slate-900">{logs.length}</span>
-                  <span className="text-xs text-slate-500 uppercase font-bold">Total</span>
+                  <span className="text-xs text-slate-500 uppercase font-bold">Logs</span>
                 </div>
                 <div className="text-center px-4">
                   <span className="block text-2xl font-black text-green-600">ON</span>
@@ -277,26 +298,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <h1 className="text-2xl font-bold text-slate-800">Gerenciar Pastas</h1>
                 <p className="text-slate-500">Adicione, edite ou remova pastas do painel do cliente.</p>
               </div>
-              
-              <div className="flex items-center gap-3">
-                 <div className="flex items-center bg-white rounded-lg p-1 border border-slate-200 shadow-sm">
-                    <button 
-                      onClick={() => setFolderViewMode('grid')}
-                      className={`p-2 rounded-md transition-all ${folderViewMode === 'grid' ? 'bg-slate-100 text-sky-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                      title="Grade"
-                    >
-                      <LayoutGrid size={20} />
-                    </button>
-                    <button 
-                      onClick={() => setFolderViewMode('list')}
-                      className={`p-2 rounded-md transition-all ${folderViewMode === 'list' ? 'bg-slate-100 text-sky-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                      title="Lista"
-                    >
-                      <ListIcon size={20} />
-                    </button>
-                 </div>
 
-                <button 
+              <div className="flex items-center gap-3">
+                <div className="flex items-center bg-white rounded-lg p-1 border border-slate-200 shadow-sm">
+                  <button
+                    onClick={() => setFolderViewMode('grid')}
+                    className={`p-2 rounded-md transition-all ${folderViewMode === 'grid' ? 'bg-slate-100 text-sky-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                    title="Grade"
+                  >
+                    <LayoutGrid size={20} />
+                  </button>
+                  <button
+                    onClick={() => setFolderViewMode('list')}
+                    className={`p-2 rounded-md transition-all ${folderViewMode === 'list' ? 'bg-slate-100 text-sky-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                    title="Lista"
+                  >
+                    <ListIcon size={20} />
+                  </button>
+                </div>
+
+                <button
                   onClick={() => handleOpenFolderModal()}
                   className="flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-lg font-medium transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 text-sm"
                 >
@@ -307,120 +328,120 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
             {/* Folder View Content */}
             {folderViewMode === 'grid' ? (
-                /* GRID VIEW */
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+              /* GRID VIEW */
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                 {folders.map((folder) => {
-                    const styles = getThemeClasses(folder.theme);
-                    
-                    return (
-                    <div 
-                        key={folder.id}
-                        className="group relative bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300"
-                    >
-                        {/* Action Buttons Overlay */}
-                        <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10 bg-white/90 backdrop-blur-sm rounded-lg p-1 shadow-sm border border-slate-100">
-                        <button 
-                            onClick={(e) => { e.stopPropagation(); handleOpenFolderModal(folder); }}
-                            className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
-                            title="Editar Pasta"
-                        >
-                            <Edit2 size={16} />
-                        </button>
-                        <button 
-                            onClick={(e) => { e.stopPropagation(); handleDeleteFolderAction(folder.id); }}
-                            className="p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                            title="Excluir Pasta"
-                        >
-                            <Trash2 size={16} />
-                        </button>
-                        </div>
+                  const styles = getThemeClasses(folder.theme);
 
-                        <div className="flex flex-col h-full justify-between pointer-events-none">
+                  return (
+                    <div
+                      key={folder.id}
+                      className="group relative bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300"
+                    >
+                      {/* Action Buttons Overlay */}
+                      <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10 bg-white/90 backdrop-blur-sm rounded-lg p-1 shadow-sm border border-slate-100">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleOpenFolderModal(folder); }}
+                          className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                          title="Editar Pasta"
+                        >
+                          <Edit2 size={16} />
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleDeleteFolderAction(folder.id); }}
+                          className="p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                          title="Excluir Pasta"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+
+                      <div className="flex flex-col h-full justify-between pointer-events-none">
                         <div className="mb-4">
-                            <div className={`
+                          <div className={`
                             inline-flex items-center justify-center p-3.5 rounded-2xl mb-4
                             ${styles.bg} ${styles.color} shadow-sm
                             `}>
                             <Folder className="w-8 h-8 fill-current opacity-90" />
-                            </div>
-                            
-                            <h3 className="font-bold text-sm leading-snug truncate text-slate-700">
+                          </div>
+
+                          <h3 className="font-bold text-sm leading-snug truncate text-slate-700">
                             {folder.name}
-                            </h3>
-                            <p className="text-[11px] text-slate-400 mt-1 font-medium truncate">
+                          </h3>
+                          <p className="text-[11px] text-slate-400 mt-1 font-medium truncate">
                             {folder.url || 'Sem link'}
-                            </p>
+                          </p>
                         </div>
 
                         <div className="flex items-center justify-between pt-3 border-t border-slate-50">
-                            <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">
+                          <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">
                             Google Drive
-                            </span>
-                            <FolderOpen size={14} className="text-slate-300" />
+                          </span>
+                          <FolderOpen size={14} className="text-slate-300" />
                         </div>
-                        </div>
+                      </div>
                     </div>
-                    );
+                  );
                 })}
-                </div>
+              </div>
             ) : (
-                /* LIST VIEW */
-                <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                    <table className="min-w-full divide-y divide-slate-100">
-                        <thead className="bg-slate-50">
-                            <tr>
-                                <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Nome da Pasta</th>
-                                <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider hidden sm:table-cell">Link de Destino</th>
-                                <th scope="col" className="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-slate-100">
-                            {folders.map((folder) => {
-                                const styles = getThemeClasses(folder.theme);
-                                return (
-                                    <tr key={folder.id} className="hover:bg-slate-50 transition-colors">
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="flex items-center">
-                                                <div className={`flex-shrink-0 h-10 w-10 rounded-lg flex items-center justify-center ${styles.bg}`}>
-                                                    <Folder className={`h-5 w-5 ${styles.color} fill-current`} />
-                                                </div>
-                                                <div className="ml-4">
-                                                    <div className="text-sm font-bold text-slate-900">{folder.name}</div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap hidden sm:table-cell">
-                                            <div className="flex items-center gap-2 text-sm text-slate-500 max-w-xs truncate">
-                                                <ExternalLink size={14} />
-                                                <span className="truncate">{folder.url || 'Não configurado'}</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <div className="flex justify-end gap-2">
-                                                <button 
-                                                    onClick={() => handleOpenFolderModal(folder)}
-                                                    className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                                    title="Editar"
-                                                >
-                                                    <Edit2 size={18} />
-                                                </button>
-                                                <button 
-                                                    onClick={() => handleDeleteFolderAction(folder.id)}
-                                                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                    title="Excluir"
-                                                >
-                                                    <Trash2 size={18} />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
-                </div>
+              /* LIST VIEW */
+              <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <table className="min-w-full divide-y divide-slate-100">
+                  <thead className="bg-slate-50">
+                    <tr>
+                      <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Nome da Pasta</th>
+                      <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider hidden sm:table-cell">Link de Destino</th>
+                      <th scope="col" className="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-slate-100">
+                    {folders.map((folder) => {
+                      const styles = getThemeClasses(folder.theme);
+                      return (
+                        <tr key={folder.id} className="hover:bg-slate-50 transition-colors">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className={`flex-shrink-0 h-10 w-10 rounded-lg flex items-center justify-center ${styles.bg}`}>
+                                <Folder className={`h-5 w-5 ${styles.color} fill-current`} />
+                              </div>
+                              <div className="ml-4">
+                                <div className="text-sm font-bold text-slate-900">{folder.name}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap hidden sm:table-cell">
+                            <div className="flex items-center gap-2 text-sm text-slate-500 max-w-xs truncate">
+                              <ExternalLink size={14} />
+                              <span className="truncate">{folder.url || 'Não configurado'}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div className="flex justify-end gap-2">
+                              <button
+                                onClick={() => handleOpenFolderModal(folder)}
+                                className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                title="Editar"
+                              >
+                                <Edit2 size={18} />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteFolderAction(folder.id)}
+                                className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                title="Excluir"
+                              >
+                                <Trash2 size={18} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             )}
-            
+
             {folders.length === 0 && (
               <div className="text-center py-12 bg-white rounded-xl border border-dashed border-slate-300 mt-4">
                 <p className="text-slate-400">Nenhuma pasta criada.</p>
@@ -438,25 +459,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <p className="text-slate-500">Controle quem tem acesso ao sistema SST.</p>
               </div>
               <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-                 {/* Search Bar */}
-                 <div className="relative group w-full sm:w-64">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Search className="h-4 w-4 text-slate-400 group-focus-within:text-sky-500 transition-colors" />
-                    </div>
-                    <input
-                        type="text"
-                        className="block w-full pl-10 pr-3 py-2.5 border border-slate-200 rounded-lg leading-5 bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all sm:text-sm shadow-sm"
-                        placeholder="Buscar cliente..."
-                        value={userSearchTerm}
-                        onChange={(e) => setUserSearchTerm(e.target.value)}
-                    />
-                 </div>
+                {/* Search Bar */}
+                <div className="relative group w-full sm:w-64">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Search className="h-4 w-4 text-slate-400 group-focus-within:text-sky-500 transition-colors" />
+                  </div>
+                  <input
+                    type="text"
+                    className="block w-full pl-10 pr-3 py-2.5 border border-slate-200 rounded-lg leading-5 bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all sm:text-sm shadow-sm"
+                    placeholder="Buscar cliente..."
+                    value={userSearchTerm}
+                    onChange={(e) => setUserSearchTerm(e.target.value)}
+                  />
+                </div>
 
-                <button 
-                    onClick={() => handleOpenUserModal()}
-                    className="flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-700 text-white px-5 py-2.5 rounded-lg font-medium transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 text-sm whitespace-nowrap"
+                <button
+                  onClick={() => handleOpenUserModal()}
+                  className="flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-700 text-white px-5 py-2.5 rounded-lg font-medium transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 text-sm whitespace-nowrap"
                 >
-                    <Plus size={18} /> Novo Usuário
+                  <Plus size={18} /> Novo Usuário
                 </button>
               </div>
             </div>
@@ -476,18 +497,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     {filteredUsers.map((user) => (
                       <tr key={user.id} className="hover:bg-slate-50">
                         <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex flex-col">
-                                <span className="text-sm font-bold text-slate-900">{user.name}</span>
-                                <div className="flex items-center text-xs text-slate-500 mt-1">
-                                    <Mail size={12} className="mr-1.5 opacity-70" /> {user.email}
-                                </div>
+                          <div className="flex flex-col">
+                            <span className="text-sm font-bold text-slate-900">{user.name}</span>
+                            <div className="flex items-center text-xs text-slate-500 mt-1">
+                              <Mail size={12} className="mr-1.5 opacity-70" /> {user.email}
                             </div>
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center gap-2 text-sm text-slate-600">
-                                <Calendar size={14} className="text-slate-400" />
-                                <span>{user.createdAt}</span>
-                            </div>
+                          <div className="flex items-center gap-2 text-sm text-slate-600">
+                            <Calendar size={14} className="text-slate-400" />
+                            <span>{user.createdAt}</span>
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           {user.role === 'admin' ? (
@@ -502,14 +523,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <div className="flex justify-end gap-2">
-                             <button 
+                            <button
                               onClick={() => onResetPassword(user.email)}
                               className="group flex items-center gap-1.5 text-slate-500 hover:text-orange-600 px-3 py-1.5 hover:bg-orange-50 rounded-lg transition-all border border-transparent hover:border-orange-200"
                               title="Enviar Email de Redefinição"
                             >
                               <Key size={16} /> <span className="text-xs font-semibold">Resetar Senha</span>
                             </button>
-                            <button 
+                            <button
                               onClick={() => handleOpenUserModal(user)}
                               className="text-blue-600 hover:text-blue-900 p-2 hover:bg-blue-50 rounded-lg transition-colors"
                               title="Editar Usuário"
@@ -517,7 +538,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                               <Edit2 size={18} />
                             </button>
                             {user.role !== 'admin' && (
-                              <button 
+                              <button
                                 onClick={() => handleDeleteUserAction(user.id)}
                                 className="text-red-600 hover:text-red-900 p-2 hover:bg-red-50 rounded-lg transition-colors"
                                 title="Excluir Usuário"
@@ -530,11 +551,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       </tr>
                     ))}
                     {filteredUsers.length === 0 && (
-                        <tr>
-                            <td colSpan={4} className="px-6 py-12 text-center text-slate-400">
-                                Nenhum usuário encontrado para "{userSearchTerm}".
-                            </td>
-                        </tr>
+                      <tr>
+                        <td colSpan={4} className="px-6 py-12 text-center text-slate-400">
+                          Nenhum usuário encontrado para "{userSearchTerm}".
+                        </td>
+                      </tr>
                     )}
                   </tbody>
                 </table>
@@ -557,15 +578,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <X size={20} />
               </button>
             </div>
-            
+
             <form onSubmit={handleSaveFolder} className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Nome da Pasta</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   required
                   value={folderForm.name}
-                  onChange={(e) => setFolderForm({...folderForm, name: e.target.value})}
+                  onChange={(e) => setFolderForm({ ...folderForm, name: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500 outline-none transition-all"
                   placeholder="Ex: Documentos 2024"
                 />
@@ -573,10 +594,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Link de Redirecionamento</label>
-                <input 
-                  type="url" 
+                <input
+                  type="url"
                   value={folderForm.url}
-                  onChange={(e) => setFolderForm({...folderForm, url: e.target.value})}
+                  onChange={(e) => setFolderForm({ ...folderForm, url: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-slate-500 focus:border-slate-500 outline-none transition-all"
                   placeholder="https://drive.google.com/..."
                 />
@@ -589,7 +610,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <button
                       key={theme.value}
                       type="button"
-                      onClick={() => setFolderForm({...folderForm, theme: theme.value})}
+                      onClick={() => setFolderForm({ ...folderForm, theme: theme.value })}
                       className={`w-8 h-8 rounded-full border-2 transition-all ${folderForm.theme === theme.value ? 'border-slate-800 scale-110 shadow-md' : 'border-transparent hover:scale-105'} ${theme.class}`}
                       title={theme.label}
                     />
@@ -598,15 +619,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </div>
 
               <div className="pt-4 flex gap-3">
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => setIsFolderModalOpen(false)}
                   className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors"
                 >
                   Cancelar
                 </button>
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   className="flex-1 px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 font-medium transition-colors flex items-center justify-center gap-2"
                 >
                   <Save size={18} /> Salvar
@@ -629,15 +650,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <X size={20} />
               </button>
             </div>
-            
+
             <form onSubmit={handleSaveUser} className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Nome Completo</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   required
                   value={userForm.name}
-                  onChange={(e) => setUserForm({...userForm, name: e.target.value})}
+                  onChange={(e) => setUserForm({ ...userForm, name: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all"
                   placeholder="Ex: João da Silva"
                 />
@@ -645,11 +666,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Email de Acesso</label>
-                <input 
-                  type="email" 
+                <input
+                  type="email"
                   required
                   value={userForm.email}
-                  onChange={(e) => setUserForm({...userForm, email: e.target.value})}
+                  onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all"
                   placeholder="cliente@email.com"
                 />
@@ -657,13 +678,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                   {editingUser ? "Redefinir Senha (Opcional)" : "Senha Inicial"}
+                  {editingUser ? "Redefinir Senha (Opcional)" : "Senha Inicial"}
                 </label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   required={!editingUser}
                   value={userForm.password}
-                  onChange={(e) => setUserForm({...userForm, password: e.target.value})}
+                  onChange={(e) => setUserForm({ ...userForm, password: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all"
                   placeholder={editingUser ? "Deixe em branco para manter a atual" : "Defina uma senha"}
                 />
@@ -671,27 +692,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
               {/* Only show role selection if editing logic allows, usually admins create users */}
               <div>
-                 <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Acesso</label>
-                 <select 
-                    value={userForm.role}
-                    onChange={(e) => setUserForm({...userForm, role: e.target.value as 'admin'|'user'})}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 outline-none"
-                 >
-                    <option value="user">Cliente (Acesso Padrão)</option>
-                    <option value="admin">Administrador Master</option>
-                 </select>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Acesso</label>
+                <select
+                  value={userForm.role}
+                  onChange={(e) => setUserForm({ ...userForm, role: e.target.value as 'admin' | 'user' })}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 outline-none"
+                >
+                  <option value="user">Cliente (Acesso Padrão)</option>
+                  <option value="admin">Administrador Master</option>
+                </select>
               </div>
 
               <div className="pt-4 flex gap-3">
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => setIsUserModalOpen(false)}
                   className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors"
                 >
                   Cancelar
                 </button>
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   className="flex-1 px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 font-medium transition-colors flex items-center justify-center gap-2"
                 >
                   <Save size={18} /> Salvar Usuário

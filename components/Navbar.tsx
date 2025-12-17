@@ -20,7 +20,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onLoginClick }) => {
     e.preventDefault();
     const element = document.getElementById(id);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+      const headerOffset = 80; // altura do header
+      const extraOffset = id === 'pricing' ? 200 : 0; // offset extra para a seção de preços
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset + extraOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
     }
     setIsOpen(false);
   };

@@ -7,37 +7,37 @@ const testimonials: Testimonial[] = [
     name: "Henrique Kazu",
     role: "Engenheiro de Segurança",
     content: "Encontrei uma grande quantidade de conteúdo valioso. Fiquei surpreso com a qualidade dos materiais úteis disponíveis. Além disso, o suporte foi muito acessível e rápido.",
-    image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+    image: "/HenriqueKazu.jpg"
   },
   {
     name: "George Rodrigues",
     role: "Técnico de Segurança",
     content: "Ótimo material. Muito claro as planilhas. Muito contente com esse material!!!! Obrigado pela atenção!",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+    image: "/GeorgeRodrigues.jpg"
   },
   {
-    name: "Renata Pereira",
+    name: "Renata Ferreira",
     role: "Técnica de Segurança",
     content: "Adorei! Já comprei muitos materiais de Segurança do Trabalho online, este me chamou a atenção pela organização e pelos bônus. Super indico! Parabéns!",
-    image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+    image: "/RenataFerreira.png"
   },
   {
     name: "Gleisson Ribeiro",
     role: "Técnico de Segurança",
     content: "Um vasto material de SST, além do material BÔNUS, que é simplesmente SENSACIONAL! Vale muito o investimento.",
-    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+    image: "/GleissonRibeiro.jpg"
   },
   {
-    name: "Miguel Sousa",
+    name: "Miguel Souza",
     role: "Técnico de Segurança",
     content: "Como iniciante na área, a planilha da CIPA automatizada foi fundamental para conduzir minha primeira eleição. Excelente.",
-    image: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+    image: "/MiguelSouza.png"
   },
   {
     name: "Rafael Virgilio",
     role: "Técnico de Segurança",
     content: "Fiz aquisição do SST em CLOUD. Essas suas planilhas são muito legais mesmo.",
-    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+    image: "/RafaelVirgilio.jpg"
   }
 ];
 
@@ -45,7 +45,7 @@ export const Testimonials: React.FC = () => {
   return (
     <div id="depoimentos" className="bg-white py-24 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        
+
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight uppercase">
             O que dizem os profissionais
@@ -59,14 +59,14 @@ export const Testimonials: React.FC = () => {
         {/* Grid Layout */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {testimonials.map((testimonial, index) => (
-            <div 
-              key={index} 
+            <div
+              key={index}
               className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100 flex flex-col"
             >
               <div className="flex items-center gap-4 mb-6">
-                <img 
-                  src={testimonial.image} 
-                  alt={testimonial.name} 
+                <img
+                  src={testimonial.image}
+                  alt={testimonial.name}
                   className="w-14 h-14 rounded-full object-cover ring-4 ring-brand-50"
                 />
                 <div>
