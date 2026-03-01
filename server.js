@@ -5,6 +5,7 @@ import pg from 'pg';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
+import { google } from 'googleapis';
 
 dotenv.config();
 
@@ -30,6 +31,41 @@ app.use((req, res, next) => {
   res.setHeader('X-XSS-Protection', '1; mode=block');
   next();
 });
+
+// ============ GOOGLE DRIVE INTEGRATION ============
+async function liberarAcessoCliente(emailNovoUsuario) {
+  if (!process.env.GOOGLE_KEYS_JSON) {
+    console.warn('⚠️ GOOGLE_KEYS_JSON não configurado. Ignorando compartilhamento do Drive.');
+    return;
+  }
+
+  try {
+    // Tenta limpar e analisar o JSON das chaves
+    const rawKeys = process.env.GOOGLE_KEYS_JSON.trim();
+    const credentials = JSON.parse(rawKeys);
+
+    const auth = new google.auth.GoogleAuth({
+      credentials,
+      scopes: ['https://www.googleapis.com/auth/drive'],
+    });
+
+    const drive = google.drive({ version: 'v3', auth });
+
+    await drive.permissions.create({
+      // Este ID corresponde à sua pasta "SST EM CLOUD"
+      fileId: '1LemUFaSmW2vsR7UlprdnTWqJw44VNri7',
+      requestBody: {
+        role: 'reader', // Acesso apenas para leitura
+        type: 'user',
+        emailAddress: emailNovoUsuario,
+      },
+      sendNotificationEmail: true,
+    });
+    console.log(`✅ Acesso liberado para: ${emailNovoUsuario}`);
+  } catch (error) {
+    console.error('❌ Erro no Google Drive:', error.message);
+  }
+}
 
 // Database configuration
 const { Pool } = pg;
@@ -395,6 +431,11 @@ app.post('/api/auth/users', async (req, res) => {
        VALUES ($1, $2, $3, $4) RETURNING id, name, email, role, created_at`,
       [name, email.toLowerCase().trim(), passwordHash, role || 'user']
     );
+
+    // Liberar acesso no Google Drive
+    if (role !== 'admin') {
+      liberarAcessoCliente(email.toLowerCase().trim());
+    }
 
     res.json({ success: true, user: result.rows[0] });
 

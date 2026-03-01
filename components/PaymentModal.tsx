@@ -20,8 +20,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) =
   };
 
   const handleHotmartRedirect = () => {
-    // Substitua pelo seu link real da Hotmart
-    window.open('https://pay.hotmart.com/SEU_LINK_AQUI', '_blank');
+    window.open('https://pay.hotmart.com/G31174149Q?off=om2yn0en&checkoutMode=10&offDiscount=S%C3%93HOJE&src=paginadevendas', '_blank');
   };
 
   const handleWhatsAppConfirm = () => {
