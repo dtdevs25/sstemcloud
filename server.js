@@ -40,8 +40,13 @@ async function liberarAcessoCliente(emailNovoUsuario) {
   }
 
   try {
-    // Tenta limpar e analisar o JSON das chaves
-    const rawKeys = process.env.GOOGLE_KEYS_JSON.trim();
+    let rawKeys = process.env.GOOGLE_KEYS_JSON.trim();
+
+    // Se o JSON vier com \n literais (comuns em variáveis do CapRover quando coladas de certas fontes)
+    if (rawKeys.includes('\\n')) {
+      rawKeys = rawKeys.replace(/\\n/g, '\n');
+    }
+
     const credentials = JSON.parse(rawKeys);
 
     const auth = new google.auth.GoogleAuth({
