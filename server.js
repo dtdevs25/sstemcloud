@@ -42,16 +42,17 @@ async function liberarAcessoCliente(emailNovoUsuario) {
   try {
     let rawKeys = process.env.GOOGLE_KEYS_JSON.trim();
 
-    // Remove espaços especiais como non-breaking spaces (comuns em cópias de texto formatado)
+    // 1. Remove espaços especiais (non-breaking spaces)
     rawKeys = rawKeys.replace(/\u00A0/g, ' ');
 
-    // Se o JSON vier com \n ou \t literais
-    if (rawKeys.includes('\\n')) {
-      rawKeys = rawKeys.replace(/\\n/g, '\n');
-    }
-    if (rawKeys.includes('\\t')) {
-      rawKeys = rawKeys.replace(/\\t/g, '  ');
-    }
+    // 2. Converte \n literais em quebras de linha reais para limpar a estrutura
+    rawKeys = rawKeys.replace(/\\n/g, '\n');
+
+    // 3. CORREÇÃO CRUCIAL: Quebras de linha REAIS dentro de strings são inválidas no JSON.
+    // Vamos encontrar o valor da private_key e re-escapar as quebras de linha dentro dela.
+    rawKeys = rawKeys.replace(/("private_key":\s*")([\s\S]+?)(")/g, (match, p1, p2, p3) => {
+      return p1 + p2.replace(/\n/g, '\\n') + p3;
+    });
 
     const credentials = JSON.parse(rawKeys);
 
