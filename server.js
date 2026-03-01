@@ -42,9 +42,15 @@ async function liberarAcessoCliente(emailNovoUsuario) {
   try {
     let rawKeys = process.env.GOOGLE_KEYS_JSON.trim();
 
-    // Se o JSON vier com \n literais (comuns em variáveis do CapRover quando coladas de certas fontes)
+    // Remove espaços especiais como non-breaking spaces (comuns em cópias de texto formatado)
+    rawKeys = rawKeys.replace(/\u00A0/g, ' ');
+
+    // Se o JSON vier com \n ou \t literais
     if (rawKeys.includes('\\n')) {
       rawKeys = rawKeys.replace(/\\n/g, '\n');
+    }
+    if (rawKeys.includes('\\t')) {
+      rawKeys = rawKeys.replace(/\\t/g, '  ');
     }
 
     const credentials = JSON.parse(rawKeys);
