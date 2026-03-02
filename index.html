@@ -246,6 +246,18 @@
     .custom-scrollbar::-webkit-scrollbar-thumb:hover {
       background: #cbd5e1;
     }
+
+    /* Hide scrollbar but allow scrolling on mobile */
+    @media (max-width: 768px) {
+      .no-scrollbar-mobile::-webkit-scrollbar {
+        display: none;
+      }
+
+      .no-scrollbar-mobile {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    }
   </style>
   <script type="importmap">
 {

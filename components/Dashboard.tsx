@@ -156,8 +156,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ folders, currentUser, onLo
               </div>
             </div>
 
-            <div className="flex items-center gap-6">
-              <div className="flex flex-col items-end">
+            <div className="flex items-center gap-3 sm:gap-6">
+              <div className="flex flex-col items-end hidden sm:flex">
                 <span className="text-sm font-bold text-gray-900 leading-none">{currentUser?.name || 'Usuário'}</span>
                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
                   {currentUser?.role === 'admin' ? 'Master' : 'Cliente'}
@@ -166,7 +166,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ folders, currentUser, onLo
 
               <button
                 onClick={onLogout}
-                className="w-10 h-10 flex items-center justify-center bg-red-50 text-red-500 rounded-full hover:bg-red-100 transition-all shadow-sm border border-red-100 group"
+                className="w-10 h-10 flex items-center justify-center bg-red-50 text-red-500 rounded-full hover:bg-red-100 transition-all shadow-sm border border-red-100 group shrink-0"
                 title="Sair"
               >
                 <LogOut size={18} className="group-hover:translate-x-0.5 transition-transform" />
@@ -319,54 +319,56 @@ export const Dashboard: React.FC<DashboardProps> = ({ folders, currentUser, onLo
         ) : (
           /* LIST VIEW */
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-100">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Nome</th>
-                  <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider hidden sm:table-cell">Origem</th>
-                  <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider hidden md:table-cell">Acesso</th>
-                  <th scope="col" className="relative px-6 py-4"><span className="sr-only">Ações</span></th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-100">
-                {filteredFolders.map((folder) => {
-                  const isSelected = selectedFolderId === folder.id;
-                  const styles = getThemeClasses(folder.theme);
+            <div className="overflow-x-auto custom-scrollbar">
+              <table className="min-w-full divide-y divide-gray-100">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Nome</th>
+                    <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider hidden sm:table-cell">Origem</th>
+                    <th scope="col" className="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider hidden md:table-cell">Acesso</th>
+                    <th scope="col" className="relative px-6 py-4"><span className="sr-only">Ações</span></th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-100">
+                  {filteredFolders.map((folder) => {
+                    const isSelected = selectedFolderId === folder.id;
+                    const styles = getThemeClasses(folder.theme);
 
-                  return (
-                    <tr
-                      key={folder.id}
-                      onClick={() => handleFolderClick(folder)}
-                      className={`cursor-pointer transition-colors ${isSelected ? 'bg-brand-50' : 'hover:bg-gray-50'}`}
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className={`flex-shrink-0 h-10 w-10 rounded-lg flex items-center justify-center ${styles.bg}`}>
-                            <Folder className={`h-5 w-5 ${styles.color} fill-current`} />
+                    return (
+                      <tr
+                        key={folder.id}
+                        onClick={() => handleFolderClick(folder)}
+                        className={`cursor-pointer transition-colors ${isSelected ? 'bg-brand-50' : 'hover:bg-gray-50'}`}
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div className={`flex-shrink-0 h-10 w-10 rounded-lg flex items-center justify-center ${styles.bg}`}>
+                              <Folder className={`h-5 w-5 ${styles.color} fill-current`} />
+                            </div>
+                            <div className="ml-4">
+                              <div className={`text-sm font-bold ${isSelected ? 'text-brand-700' : 'text-gray-900'}`}>{folder.name}</div>
+                              <div className="text-xs text-gray-400 md:hidden">Google Drive</div>
+                            </div>
                           </div>
-                          <div className="ml-4">
-                            <div className={`text-sm font-bold ${isSelected ? 'text-brand-700' : 'text-gray-900'}`}>{folder.name}</div>
-                            <div className="text-xs text-gray-400 md:hidden">Google Drive</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap hidden sm:table-cell">
-                        <div className="text-sm text-gray-500">Google Drive</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap hidden md:table-cell">
-                        <div className="text-sm text-gray-500">Link Externo</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        {isSelected && <CheckCircle2 size={18} className="text-brand-600 inline-block mr-2" />}
-                        <button className="text-gray-400 hover:text-brand-600">
-                          <ExternalLink size={18} />
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap hidden sm:table-cell">
+                          <div className="text-sm text-gray-500">Google Drive</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap hidden md:table-cell">
+                          <div className="text-sm text-gray-500">Link Externo</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          {isSelected && <CheckCircle2 size={18} className="text-brand-600 inline-block mr-2" />}
+                          <button className="text-gray-400 hover:text-brand-600">
+                            <ExternalLink size={18} />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 

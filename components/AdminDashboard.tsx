@@ -291,7 +291,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         {/* Tabs */}
-        <div className="flex space-x-1 sm:space-x-4 mb-8 border-b border-slate-200 overflow-x-auto">
+        <div className="flex space-x-1 sm:space-x-4 mb-8 border-b border-slate-200 overflow-x-auto custom-scrollbar no-scrollbar-mobile min-w-full">
           <button
             onClick={() => setActiveTab('users')}
             className={`pb-4 px-4 font-medium text-sm flex items-center gap-2 transition-colors border-b-2 whitespace-nowrap ${activeTab === 'users' ? 'border-sky-600 text-sky-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
@@ -317,7 +317,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <div className="animate-fadeIn">
             {/* Header Section */}
             {/* Stats Dashboard for Logs */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center justify-center text-center transition-all hover:shadow-md">
                 <span className="text-3xl font-black text-sky-600 mb-1">{siteVisits.total}</span>
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
@@ -342,13 +342,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
 
             {/* Header Section with Title and Search */}
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-6 gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
               <div>
                 <h1 className="text-2xl font-bold text-slate-800">Histórico de Atividade</h1>
                 <p className="text-slate-500 text-sm">Monitore todas as interações dos usuários com as pastas do Drive.</p>
               </div>
 
-              <div className="relative group w-full lg:w-80">
+              <div className="relative group w-full sm:w-80">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                   <Search className="h-4 w-4 text-slate-400 group-focus-within:text-brand-500 transition-colors" />
                 </div>
@@ -369,9 +369,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <table className="min-w-full divide-y divide-slate-100">
                   <thead className="bg-slate-50/50">
                     <tr>
-                      <th className="px-6 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest">Usuário</th>
-                      <th className="px-6 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest">Pasta Acessada</th>
-                      <th className="px-6 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Data e Hora</th>
+                      <th className="px-6 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Usuário</th>
+                      <th className="px-6 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Pasta Acessada</th>
+                      <th className="px-6 py-4 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest text-right whitespace-nowrap">Data e Hora</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-slate-100">
@@ -429,7 +429,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         {/* --- TAB: CONTENT (FOLDERS) --- */}
         {activeTab === 'content' && (
           <div className="animate-fadeIn">
-            <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
               <div>
                 <h1 className="text-2xl font-bold text-slate-800">Gerenciar Pastas</h1>
                 <p className="text-slate-500">Adicione, edite ou remova pastas do painel do cliente.</p>
@@ -589,7 +589,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         {/* --- TAB: USERS --- */}
         {activeTab === 'users' && (
           <div className="animate-fadeIn">
-            <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
               <div>
                 <h1 className="text-2xl font-bold text-slate-800">Gerenciar Usuários</h1>
                 <p className="text-slate-500">Controle quem tem acesso ao sistema SST.</p>
@@ -705,17 +705,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       {/* --- FOLDER MODAL --- */}
       {isFolderModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-slate-50">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-slate-50 shrink-0">
               <h3 className="font-bold text-lg text-slate-800">
                 {editingFolder ? 'Editar Pasta' : 'Nova Pasta'}
               </h3>
-              <button onClick={() => setIsFolderModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setIsFolderModalOpen(false)} className="text-gray-400 hover:text-gray-600 focus:outline-none">
                 <X size={20} />
               </button>
             </div>
 
-            <form onSubmit={handleSaveFolder} className="p-6 space-y-4">
+            <form onSubmit={handleSaveFolder} className="p-6 space-y-4 overflow-y-auto custom-scrollbar">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Nome da Pasta</label>
                 <input
