@@ -17,7 +17,7 @@ interface AdminDashboardProps {
   onEditFolder: (id: number, folder: Partial<FolderItem>) => void;
   onDeleteFolder: (id: number) => void;
   // User Actions
-  onAddUser: (user: Omit<User, 'id' | 'createdAt'>) => void;
+  onAddUser: (user: Omit<User, 'id' | 'createdAt'> | User) => void;
   onEditUser: (id: string, user: Partial<User>) => void;
   onDeleteUser: (id: string) => void;
   onResetPassword: (id: string) => void;
@@ -209,7 +209,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         });
         const data = await response.json();
         if (data.success) {
-          onAddUser(data.user); // No need to re-fetch or clear entire state if the component handles it
+          const newUser = {
+            id: data.user.id.toString(),
+            name: data.user.name,
+            email: data.user.email,
+            password: '',
+            role: data.user.role,
+            createdAt: new Date(data.user.created_at || new Date()).toLocaleDateString('pt-BR')
+          };
+          onAddUser(newUser); // Agora passando o objeto completo com ID
           setCreatedTempPassword(data.tempPassword);
           setIsUserModalOpen(false);
           setIsUserSuccessModalOpen(true);
@@ -774,7 +782,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             onClick={() => setIsUserModalOpen(false)}
           ></div>
 
-          <div className="relative bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col animate-slideUp border border-white/20">
+          <div className="relative bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl flex flex-col animate-slideUp border border-white/20 max-h-[90vh]">
             {/* Modal Header */}
             <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
               <div className="flex items-center gap-4">
@@ -798,7 +806,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </button>
             </div>
 
-            <form onSubmit={handleSaveUser} className="p-8 space-y-6">
+            <form onSubmit={handleSaveUser} className="p-8 space-y-6 overflow-y-auto custom-scrollbar">
               <div className="grid grid-cols-1 gap-6">
                 <div className="space-y-2">
                   <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Nome Completo</label>

@@ -222,6 +222,30 @@
     .group:hover .group-hover\:rotate-y-180 {
       transform: rotateY(180deg);
     }
+
+    /* Hide browser default password reveal button */
+    input::-ms-reveal,
+    input::-ms-clear {
+      display: none !important;
+    }
+
+    /* Custom Scrollbar for modern feel */
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #e2e8f0;
+      border-radius: 10px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #cbd5e1;
+    }
   </style>
   <script type="importmap">
 {

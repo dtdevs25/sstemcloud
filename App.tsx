@@ -330,12 +330,19 @@ const App: React.FC = () => {
   };
 
   // --- User Management (CRUD) - Conectado ao Banco de Dados ---
-  const handleAddUser = async (newUser: Omit<User, 'id' | 'createdAt'>) => {
+  const handleAddUser = async (user: Omit<User, 'id' | 'createdAt'> | User) => {
+    // Se o usuário já tiver ID, apenas adiciona ao estado local (evita fetch duplicado)
+    if ('id' in user && user.id) {
+      setUsers(prev => [...prev, user as User]);
+      showToast('Usuário cadastrado com sucesso!', 'success');
+      return;
+    }
+
     try {
       const response = await fetch('/api/auth/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newUser)
+        body: JSON.stringify(user)
       });
       const data = await response.json();
 
@@ -356,12 +363,15 @@ const App: React.FC = () => {
     } catch (error) {
       console.error('Error creating user:', error);
       // Fallback para localStorage
-      const user: User = {
-        ...newUser,
+      const fallbackUser: User = {
+        name: 'name' in user ? user.name : '',
+        email: 'email' in user ? user.email : '',
+        password: '',
+        role: 'role' in user ? user.role : 'user',
         id: Date.now().toString(),
         createdAt: new Date().toLocaleDateString('pt-BR')
       };
-      setUsers([...users, user]);
+      setUsers([...users, fallbackUser]);
     }
   };
 
@@ -422,7 +432,20 @@ const App: React.FC = () => {
   };
 
   // Routing
-  if (isAuthenticated) {
+  if (isAuthenticated && currentUser) {
+    // PRIORIDADE: Redefinição de senha obrigatória
+    if (currentPage === 'force-reset') {
+      return (
+        <ForcePasswordReset
+          email={currentUser.email}
+          onSuccess={() => {
+            showToast('Senha atualizada com sucesso!', 'success');
+            setCurrentPage(currentUser.role === 'admin' ? 'admin' : 'dashboard');
+          }}
+        />
+      );
+    }
+
     if (currentPage === 'admin') {
       return (
         <>
@@ -440,43 +463,24 @@ const App: React.FC = () => {
             onDeleteUser={handleDeleteUser}
             onResetPassword={handleResetPassword}
           />
-
           {/* Toast Notification */}
           {toast && (
             <div
               className="fixed top-4 right-4 z-[200] animate-slideIn"
               style={{ animation: 'slideIn 0.3s ease-out forwards' }}
             >
-              <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border shadow-2xl backdrop-blur-sm ${toast.type === 'success'
-                ? 'bg-green-50 border-green-200'
-                : 'bg-red-50 border-red-200'
-                }`}>
-                {toast.type === 'success'
-                  ? <CheckCircle2 className="w-5 h-5 text-green-500" />
-                  : <XCircle className="w-5 h-5 text-red-500" />
-                }
-                <span className={`font-medium text-sm ${toast.type === 'success' ? 'text-green-800' : 'text-red-800'}`}>
-                  {toast.message}
-                </span>
-                <button
-                  onClick={() => setToast(null)}
-                  className="ml-2 p-1 hover:bg-black/5 rounded-lg transition-colors"
-                >
-                  <X className="w-4 h-4 text-gray-500" />
-                </button>
+              <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border shadow-2xl backdrop-blur-sm ${toast.type === 'success' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+                {toast.type === 'success' ? <CheckCircle2 className="w-5 h-5 text-green-500" /> : <XCircle className="w-5 h-5 text-red-500" />}
+                <span className={`font-medium text-sm ${toast.type === 'success' ? 'text-green-800' : 'text-red-800'}`}>{toast.message}</span>
+                <button onClick={() => setToast(null)} className="ml-2 p-1 hover:bg-black/5 rounded-lg transition-colors"><X className="w-4 h-4 text-gray-500" /></button>
               </div>
             </div>
           )}
-
-          <style>{`
-            @keyframes slideIn {
-              from { transform: translateX(100%); opacity: 0; }
-              to { transform: translateX(0); opacity: 1; }
-            }
-          `}</style>
+          <style>{`@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }`}</style>
         </>
       );
     }
+
     if (currentPage === 'dashboard') {
       return <Dashboard folders={folders} currentUser={currentUser} onLogout={handleLogout} onFolderClick={logAccess} />;
     }
