@@ -68,9 +68,9 @@ export const Login: React.FC<LoginProps> = ({ onBack, onLogin }) => {
         <div className="bg-white/10 backdrop-blur-2xl border border-white/30 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden relative p-8 animate-fadeIn">
 
           {/* Header Minimalista */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-24 h-24 rounded-2xl bg-white/10 shadow-lg mb-4 border border-white/20 backdrop-blur-sm ring-1 ring-white/10 overflow-hidden">
-              <img src="/logo.png" alt="SSTemCLOUD Logo" className="w-full h-full object-cover" />
+          <div className="text-center mb-6">
+            <div className="flex justify-center mb-6">
+              <img src="/logo.png" alt="SST em Cloud Logo" className="h-20 w-auto object-contain drop-shadow-px" />
             </div>
             <h2 className="text-3xl font-black text-white tracking-tight drop-shadow-md">Bem-vindo</h2>
             <p className="text-blue-50 font-semibold text-sm mt-1 drop-shadow-sm opacity-90">Acesse sua área exclusiva</p>
@@ -147,15 +147,12 @@ export const Login: React.FC<LoginProps> = ({ onBack, onLogin }) => {
           </form>
 
           {/* Footer Card */}
-          <div className="mt-8 pt-6 border-t border-white/20 text-center">
-            <p className="text-xs text-white/90 font-semibold mb-3 drop-shadow-sm">
-              Não tem acesso?
-            </p>
+          <div className="mt-8 pt-6 border-t border-white/10 text-center">
             <button
               onClick={handleVerPlanos}
-              className="text-xs font-bold text-white border-2 border-white/40 px-6 py-2.5 rounded-full hover:bg-white hover:text-blue-600 transition-all tracking-wide uppercase shadow-sm backdrop-blur-sm"
+              className="text-xs font-bold text-white/80 hover:text-white transition-all underline decoration-white/20 hover:decoration-white underline-offset-4 uppercase tracking-widest px-4 py-2"
             >
-              Ver Planos Disponíveis
+              Não tem acesso? Quero acessar
             </button>
           </div>
 
