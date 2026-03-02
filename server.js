@@ -6,6 +6,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
 import { google } from 'googleapis';
+import nodemailer from 'nodemailer';
+import crypto from 'crypto';
 
 dotenv.config();
 
@@ -104,8 +106,21 @@ pool.connect((err, client, release) => {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         last_login TIMESTAMP WITH TIME ZONE,
         login_attempts INTEGER DEFAULT 0,
-        locked_until TIMESTAMP WITH TIME ZONE
+        locked_until TIMESTAMP WITH TIME ZONE,
+        reset_password_token VARCHAR(255),
+        reset_password_expires TIMESTAMP WITH TIME ZONE
       );
+
+      -- Add columns if they don't exist
+      DO $$ 
+      BEGIN 
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='app_users' AND column_name='reset_password_token') THEN
+          ALTER TABLE app_users ADD COLUMN reset_password_token VARCHAR(255);
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='app_users' AND column_name='reset_password_expires') THEN
+          ALTER TABLE app_users ADD COLUMN reset_password_expires TIMESTAMP WITH TIME ZONE;
+        END IF;
+      END $$;
 
       CREATE TABLE IF NOT EXISTS site_visits (
         id SERIAL PRIMARY KEY,
@@ -142,6 +157,29 @@ pool.connect((err, client, release) => {
 });
 
 // ============ AUTHENTICATION API ============
+
+// ============ EMAIL CONFIGURATION ============
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || 'srv-captain--mailserver',
+  port: parseInt(process.env.SMTP_PORT || '587'),
+  secure: false, // true for 465, false for other ports
+  auth: {
+    user: process.env.SMTP_USER || 'sstemcloud@ehspro.com.br',
+    pass: process.env.SMTP_PASS || 'D@nkelS2',
+  },
+  tls: {
+    rejectUnauthorized: false
+  }
+});
+
+// Verify connection configuration
+transporter.verify((error, success) => {
+  if (error) {
+    console.warn('⚠️ SMTP Error:', error.message);
+  } else {
+    console.log('✅ SMTP Server is ready to take messages');
+  }
+});
 
 // Rate limiting check
 const checkRateLimit = (ip) => {
@@ -417,6 +455,88 @@ app.get('/api/auth/users', async (req, res) => {
   } catch (error) {
     console.error('Error getting users:', error);
     res.status(500).json({ error: 'Failed to get users' });
+  }
+});
+
+// Forgot Password Endpoint
+app.post('/api/auth/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email é obrigatório' });
+
+    const result = await pool.query('SELECT id, name FROM app_users WHERE LOWER(email) = $1', [email.toLowerCase().trim()]);
+    if (result.rows.length === 0) {
+      // For security, don't reveal if user exists. But user requested "modal mostra que o email não cadastrado".
+      return res.status(404).json({ error: 'E-mail não encontrado no nosso sistema.' });
+    }
+
+    const user = result.rows[0];
+    const token = crypto.randomBytes(20).toString('hex');
+    const expires = new Date(Date.now() + 3600000); // 1 hour
+
+    await pool.query(
+      'UPDATE app_users SET reset_password_token = $1, reset_password_expires = $2 WHERE id = $3',
+      [token, expires, user.id]
+    );
+
+    const resetUrl = `${req.protocol}://${req.get('host')}/reset-password?token=${token}`;
+
+    const mailOptions = {
+      from: `"SST em Cloud" <${process.env.SMTP_USER || 'sstemcloud@ehspro.com.br'}>`,
+      to: email,
+      subject: 'Recuperação de Senha - SST em Cloud',
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; rounded: 10px;">
+          <h2 style="color: #0284c7;">Olá, ${user.name}!</h2>
+          <p>Você solicitou a recuperação de senha da sua conta no <strong>SST em Cloud</strong>.</p>
+          <p>Clique no botão abaixo para criar uma nova senha. Este link expira em 1 hora.</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${resetUrl}" style="background-color: #0284c7; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">Recuperar Minha Senha</a>
+          </div>
+          <p style="font-size: 12px; color: #666;">Se você não solicitou isso, por favor ignore este e-mail.</p>
+          <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+          <p style="font-size: 10px; color: #999;">SST em Cloud &copy; ${new Date().getFullYear()}</p>
+        </div>
+      `
+    };
+
+    await transporter.sendMail(mailOptions);
+    res.json({ success: true, message: 'E-mail de recuperação enviado com sucesso!' });
+
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ error: 'Erro ao processar solicitação de recuperação.' });
+  }
+});
+
+// Reset Password Endpoint
+app.post('/api/auth/reset-password', async (req, res) => {
+  try {
+    const { token, password } = req.body;
+    if (!token || !password) return res.status(400).json({ error: 'Token e senha são obrigatórios' });
+
+    const result = await pool.query(
+      'SELECT id FROM app_users WHERE reset_password_token = $1 AND reset_password_expires > NOW()',
+      [token]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(400).json({ error: 'Token inválido ou expirado.' });
+    }
+
+    const userId = result.rows[0].id;
+    const passwordHash = await bcrypt.hash(password, 12);
+
+    await pool.query(
+      'UPDATE app_users SET password_hash = $1, reset_password_token = NULL, reset_password_expires = NULL WHERE id = $2',
+      [passwordHash, userId]
+    );
+
+    res.json({ success: true, message: 'Senha redefinida com sucesso!' });
+
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ error: 'Erro ao redefinir senha.' });
   }
 });
 

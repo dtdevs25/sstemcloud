@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Lock, Mail, CheckCircle, Eye, EyeOff, CloudLightning, Loader2 } from 'lucide-react';
 import { Button } from './Button';
+import { ForgotPasswordModal } from './ForgotPasswordModal';
 
 interface LoginProps {
   onBack: () => void;
@@ -12,6 +13,7 @@ export const Login: React.FC<LoginProps> = ({ onBack, onLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
 
   const handleVerPlanos = () => {
     onBack();
@@ -25,11 +27,7 @@ export const Login: React.FC<LoginProps> = ({ onBack, onLogin }) => {
 
   const handleForgotPassword = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (!email) {
-      alert('Por favor, digite seu e-mail no campo acima para resetar a senha.');
-      return;
-    }
-    alert(`Uma solicitação de redefinição de senha foi enviada para: ${email}.\n\n(Simulação: Verifique sua caixa de entrada).`);
+    setIsForgotModalOpen(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -171,6 +169,11 @@ export const Login: React.FC<LoginProps> = ({ onBack, onLogin }) => {
         </div>
 
       </div>
+
+      <ForgotPasswordModal
+        isOpen={isForgotModalOpen}
+        onClose={() => setIsForgotModalOpen(false)}
+      />
     </div>
   );
 };

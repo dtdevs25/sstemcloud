@@ -12,6 +12,7 @@ import { FloatingWhatsApp } from './components/FloatingWhatsApp';
 import { Login } from './components/Login';
 import { Dashboard } from './components/Dashboard';
 import { AdminDashboard } from './components/AdminDashboard';
+import { ResetPassword } from './components/ResetPassword';
 import { PaymentModal } from './components/PaymentModal';
 import { AccessLog, FolderItem, User } from './types';
 import { CheckCircle2, XCircle, X } from 'lucide-react';
@@ -58,12 +59,13 @@ const initialUsers: User[] = [
   { id: '2', name: 'Cliente Padrão', email: 'cliente@sst.com', password: 'sst123', role: 'user', createdAt: '10/05/2024' }
 ];
 
-type PageView = 'landing' | 'login' | 'dashboard' | 'admin';
+type PageView = 'landing' | 'login' | 'dashboard' | 'admin' | 'reset-password';
 
 const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<PageView>('landing');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [resetToken, setResetToken] = useState<string | null>(null);
 
   // Payment Modal State
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -147,6 +149,18 @@ const App: React.FC = () => {
         .catch(err => console.log('Visit tracking not available'));
     }
   }, [currentPage]);
+
+  // Check for password reset token in URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    if (token) {
+      setResetToken(token);
+      setCurrentPage('reset-password');
+      // Clean URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
 
   // Login Logic - Conectado ao Banco de Dados com Segurança
   const handleLogin = async (email: string, password: string) => {
@@ -415,6 +429,19 @@ const App: React.FC = () => {
     if (currentPage === 'dashboard') {
       return <Dashboard folders={folders} onLogout={handleLogout} onFolderClick={logAccess} />;
     }
+  }
+
+  if (currentPage === 'reset-password' && resetToken) {
+    return (
+      <ResetPassword
+        token={resetToken}
+        onSuccess={() => {
+          showToast('Senha redefinida! Faça login agora.', 'success');
+          setCurrentPage('login');
+        }}
+        onBack={() => setCurrentPage('login')}
+      />
+    );
   }
 
   if (currentPage === 'login') {
