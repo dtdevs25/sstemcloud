@@ -65,30 +65,30 @@ export const Login: React.FC<LoginProps> = ({ onBack, onLogin }) => {
       <div className="w-full max-w-[360px] relative">
 
         {/* Card Body */}
-        <div className="bg-white/10 backdrop-blur-2xl border border-white/30 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden relative p-8 animate-fadeIn">
+        <div className="bg-white/10 backdrop-blur-2xl border border-white/30 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden relative px-8 py-6 animate-fadeIn">
 
           {/* Header Minimalista */}
-          <div className="text-center mb-6">
-            <div className="flex justify-center mb-6">
-              <img src="/logo.png" alt="SST em Cloud Logo" className="h-20 w-auto object-contain drop-shadow-px" />
+          <div className="text-center mb-4">
+            <div className="flex justify-center mb-4">
+              <img src="/logo.png" alt="SST em Cloud Logo" className="h-16 w-auto object-contain drop-shadow-px" />
             </div>
-            <h2 className="text-3xl font-black text-white tracking-tight drop-shadow-md">Bem-vindo</h2>
-            <p className="text-blue-50 font-semibold text-sm mt-1 drop-shadow-sm opacity-90">Acesse sua área exclusiva</p>
+            <h2 className="text-2xl font-black text-white tracking-tight drop-shadow-md">SST em Cloud</h2>
+            <p className="text-blue-50 font-semibold text-[10px] mt-0.5 drop-shadow-sm opacity-90 uppercase tracking-wider">Acesse sua área exclusiva</p>
           </div>
 
-          <form className="space-y-5" onSubmit={handleSubmit}>
+          <form className="space-y-4" onSubmit={handleSubmit}>
 
             {/* Input Moderno 1 */}
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-sky-500 drop-shadow-sm" />
+                  <Mail className="h-4 w-4 text-sky-400 drop-shadow-sm" />
                 </div>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full pl-12 pr-4 py-4 bg-black/20 hover:bg-black/30 focus:bg-black/30 border border-white/10 rounded-2xl text-sm text-white placeholder-white/70 font-medium focus:outline-none focus:ring-2 focus:ring-white/40 transition-all duration-300 shadow-inner"
+                  className="block w-full pl-11 pr-4 py-3 bg-black/20 hover:bg-black/30 focus:bg-black/30 border border-white/10 rounded-2xl text-xs text-white placeholder-white/60 font-medium focus:outline-none focus:ring-2 focus:ring-white/30 transition-all duration-300 shadow-inner"
                   placeholder="Seu e-mail"
                   required
                 />
@@ -96,32 +96,32 @@ export const Login: React.FC<LoginProps> = ({ onBack, onLogin }) => {
             </div>
 
             {/* Input Moderno 2 */}
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-sky-500 drop-shadow-sm" />
+                  <Lock className="h-4 w-4 text-sky-400 drop-shadow-sm" />
                 </div>
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-12 pr-12 py-4 bg-black/20 hover:bg-black/30 focus:bg-black/30 border border-white/10 rounded-2xl text-sm text-white placeholder-white/70 font-medium focus:outline-none focus:ring-2 focus:ring-white/40 transition-all duration-300 shadow-inner"
+                  className="block w-full pl-11 pr-11 py-3 bg-black/20 hover:bg-black/30 focus:bg-black/30 border border-white/10 rounded-2xl text-xs text-white placeholder-white/60 font-medium focus:outline-none focus:ring-2 focus:ring-white/30 transition-all duration-300 shadow-inner"
                   placeholder="Sua senha"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-white/70 hover:text-white transition-colors focus:outline-none"
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-white/50 hover:text-white transition-colors focus:outline-none"
                 >
-                  {showPassword ? <EyeOff className="h-5 w-5 drop-shadow-sm" /> : <Eye className="h-5 w-5 drop-shadow-sm" />}
+                  {showPassword ? <EyeOff className="h-4 w-4 drop-shadow-sm" /> : <Eye className="h-4 w-4 drop-shadow-sm" />}
                 </button>
               </div>
               <div className="flex justify-end">
                 <button
                   type="button"
                   onClick={handleForgotPassword}
-                  className="text-xs font-bold text-white hover:text-blue-100 transition-colors drop-shadow-sm underline decoration-white/30 hover:decoration-white focus:outline-none"
+                  className="text-[10px] font-bold text-white/80 hover:text-white transition-colors drop-shadow-sm underline decoration-white/20 hover:decoration-white focus:outline-none"
                 >
                   Esqueceu a senha?
                 </button>
@@ -133,11 +133,11 @@ export const Login: React.FC<LoginProps> = ({ onBack, onLogin }) => {
               fullWidth
               type="submit"
               disabled={isLoading}
-              className="mt-4 rounded-xl py-4 text-sm font-black uppercase tracking-wider bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-500 hover:to-indigo-600 text-white shadow-xl shadow-blue-900/20 hover:shadow-blue-900/40 hover:-translate-y-0.5 transition-all duration-300 border border-white/10 disabled:opacity-70 disabled:cursor-not-allowed"
+              className="mt-2 rounded-xl py-3.5 text-xs font-black uppercase tracking-widest bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-500 hover:to-indigo-600 text-white shadow-xl shadow-blue-900/20 hover:shadow-blue-900/40 transition-all duration-300 border border-white/10 disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <span className="flex items-center gap-2">
-                  <Loader2 className="animate-spin h-5 w-5" /> Entrando...
+                  <Loader2 className="animate-spin h-4 w-4" /> Entrando...
                 </span>
               ) : (
                 "Entrar Agora"
@@ -147,10 +147,10 @@ export const Login: React.FC<LoginProps> = ({ onBack, onLogin }) => {
           </form>
 
           {/* Footer Card */}
-          <div className="mt-8 pt-6 border-t border-white/10 text-center">
+          <div className="mt-6 pt-4 border-t border-white/10 text-center">
             <button
               onClick={handleVerPlanos}
-              className="text-xs font-black text-yellow-300 hover:text-white transition-all uppercase tracking-widest px-4 py-2 animate-pulse whitespace-nowrap"
+              className="text-[10px] font-black text-amber-400 hover:text-white transition-all uppercase tracking-widest px-4 py-1 animate-pulse whitespace-nowrap"
             >
               Liberar meu acesso agora
             </button>
