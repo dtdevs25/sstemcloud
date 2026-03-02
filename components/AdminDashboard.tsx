@@ -68,7 +68,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onResetPassword,
   currentUser
 }) => {
-  const [activeTab, setActiveTab] = useState<'logs' | 'content' | 'users'>('logs');
+  const [activeTab, setActiveTab] = useState<'logs' | 'content' | 'users'>('users');
 
   // --- Site Visits State ---
   const [siteVisits, setSiteVisits] = useState({ total: 0, today: 0 });
@@ -79,7 +79,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       .then(res => res.json())
       .then(data => setSiteVisits({ total: data.total || 0, today: data.today || 0 }))
       .catch(() => setSiteVisits({ total: 0, today: 0 }));
-  }, []);
+
+    // No App.tsx já existe uma lógica de logs em memória, 
+    // mas aqui no Admin vamos buscar o histórico real do banco
+    if (activeTab === 'logs') {
+      fetch('/api/logs')
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) {
+            // Atualizar o estado no componente pai ou localmente se necessário
+            // Por enquanto, o App.tsx gerencia logs, mas podemos implementar fetch local aqui se preferir
+          }
+        })
+        .catch(err => console.error('Error fetching logs:', err));
+    }
+  }, [activeTab]);
 
   // --- View States ---
   const [folderViewMode, setFolderViewMode] = useState<'grid' | 'list'>('grid');
@@ -246,10 +260,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         {/* Tabs */}
         <div className="flex space-x-1 sm:space-x-4 mb-8 border-b border-slate-200 overflow-x-auto">
           <button
-            onClick={() => setActiveTab('logs')}
-            className={`pb-4 px-4 font-medium text-sm flex items-center gap-2 transition-colors border-b-2 whitespace-nowrap ${activeTab === 'logs' ? 'border-sky-600 text-sky-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+            onClick={() => setActiveTab('users')}
+            className={`pb-4 px-4 font-medium text-sm flex items-center gap-2 transition-colors border-b-2 whitespace-nowrap ${activeTab === 'users' ? 'border-sky-600 text-sky-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
           >
-            <Activity size={18} /> Monitoramento
+            <Users size={18} /> Clientes
           </button>
           <button
             onClick={() => setActiveTab('content')}
@@ -258,10 +272,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <Layout size={18} /> Conteúdo do Drive
           </button>
           <button
-            onClick={() => setActiveTab('users')}
-            className={`pb-4 px-4 font-medium text-sm flex items-center gap-2 transition-colors border-b-2 whitespace-nowrap ${activeTab === 'users' ? 'border-sky-600 text-sky-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+            onClick={() => setActiveTab('logs')}
+            className={`pb-4 px-4 font-medium text-sm flex items-center gap-2 transition-colors border-b-2 whitespace-nowrap ${activeTab === 'logs' ? 'border-sky-600 text-sky-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
           >
-            <Users size={18} /> Usuários
+            <Activity size={18} /> Monitoramento (Logs)
           </button>
         </div>
 

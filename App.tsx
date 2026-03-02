@@ -105,7 +105,6 @@ const App: React.FC = () => {
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data) && data.length > 0) {
-          // Converter formato do banco para formato do app
           const dbFolders = data.map((f: any) => ({
             id: f.id,
             name: f.name,
@@ -125,12 +124,11 @@ const App: React.FC = () => {
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data) && data.length > 0) {
-          // Converter formato do banco para formato do app
           const dbUsers = data.map((u: any) => ({
             id: u.id.toString(),
             name: u.name,
             email: u.email,
-            password: '', // Nunca armazenar senha
+            password: '',
             role: u.role,
             createdAt: u.created_at ? new Date(u.created_at).toLocaleDateString('pt-BR') : 'N/A'
           }));
@@ -138,6 +136,18 @@ const App: React.FC = () => {
         }
       })
       .catch(err => console.log('Using local users - API not available'));
+  }, []);
+
+  // Buscar logs do banco de dados (admin)
+  useEffect(() => {
+    fetch('/api/logs')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setLogs(data);
+        }
+      })
+      .catch(err => console.log('Using local logs - API not available'));
   }, []);
 
   // Registrar visita ao site (uma vez por sessão)
@@ -157,7 +167,6 @@ const App: React.FC = () => {
     if (token) {
       setResetToken(token);
       setCurrentPage('reset-password');
-      // Clean URL
       window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, []);
@@ -228,13 +237,29 @@ const App: React.FC = () => {
     setCurrentPage('landing');
   };
 
-  const logAccess = (folderName: string) => {
+  const logAccess = async (folderName: string) => {
     const newLog: AccessLog = {
       user: currentUser?.email || 'Desconhecido',
       folder: folderName,
       timestamp: new Date().toLocaleString('pt-BR'),
     };
-    setLogs((prevLogs) => [...prevLogs, newLog]);
+
+    // Atualizar estado local
+    setLogs((prevLogs) => [newLog, ...prevLogs]);
+
+    // Salvar no banco
+    try {
+      await fetch('/api/logs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: currentUser?.email,
+          folderName: folderName
+        })
+      });
+    } catch (err) {
+      console.error('Error recording access log:', err);
+    }
   };
 
   // --- Folder Management (CRUD) - Conectado ao Banco de Dados ---

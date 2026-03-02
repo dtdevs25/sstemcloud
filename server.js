@@ -718,6 +718,56 @@ app.delete('/api/folders/:id', async (req, res) => {
   }
 });
 
+// ============ ACCESS LOGS API ============
+
+// Obter todos os logs de acesso (admin)
+app.get('/api/logs', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        al.id, 
+        al.user_email as user, 
+        al.folder_name as folder, 
+        al.accessed_at as timestamp 
+      FROM access_logs al 
+      ORDER BY al.accessed_at DESC 
+      LIMIT 1000
+    `);
+
+    // Formatar timestamp para o frontend
+    const logs = result.rows.map(log => ({
+      ...log,
+      timestamp: log.timestamp.toLocaleString('pt-BR')
+    }));
+
+    res.json(logs);
+  } catch (error) {
+    console.error('Error getting logs:', error);
+    res.status(500).json({ error: 'Failed to get logs', logs: [] });
+  }
+});
+
+// Registrar log de acesso
+app.post('/api/logs', async (req, res) => {
+  try {
+    const { email, folderName } = req.body;
+
+    if (!email || !folderName) {
+      return res.status(400).json({ error: 'Email and folder name are required' });
+    }
+
+    await pool.query(
+      'INSERT INTO access_logs (user_email, folder_name) VALUES ($1, $2)',
+      [email, folderName]
+    );
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error recording access log:', error);
+    res.status(500).json({ error: 'Failed to record log' });
+  }
+});
+
 // Rota para popular pastas iniciais (executar uma vez)
 app.post('/api/folders/seed', async (req, res) => {
   try {
