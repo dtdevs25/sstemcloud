@@ -35,7 +35,7 @@ export interface FolderItem {
   url: string;
   theme: FolderTheme;
   // Propriedades computadas visualmente baseadas no tema
-  color?: string; 
+  color?: string;
   bg?: string;
   border?: string;
 }
@@ -44,6 +44,16 @@ export interface AccessLog {
   user: string;
   folder: string;
   timestamp: string;
+}
+
+export interface DriveFile {
+  id: string;
+  name: string;
+  mimeType: string;
+  webViewLink: string;
+  iconLink?: string;
+  thumbnailLink?: string;
+  size?: string;
 }
 
 export interface User {

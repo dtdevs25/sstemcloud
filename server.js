@@ -34,24 +34,21 @@ app.use((req, res, next) => {
   next();
 });
 
-// ============ GOOGLE DRIVE INTEGRATION ============
-async function liberarAcessoCliente(emailNovoUsuario) {
+// ============ GOOGLE DRIVE CLIENT ============
+let driveClient = null;
+
+async function getDriveClient() {
+  if (driveClient) return driveClient;
+
   if (!process.env.GOOGLE_KEYS_JSON) {
-    console.warn('⚠️ GOOGLE_KEYS_JSON não configurado. Ignorando compartilhamento do Drive.');
-    return;
+    console.warn('⚠️ GOOGLE_KEYS_JSON não configurado.');
+    return null;
   }
 
   try {
     let rawKeys = process.env.GOOGLE_KEYS_JSON.trim();
-
-    // 1. Remove espaços especiais (non-breaking spaces)
     rawKeys = rawKeys.replace(/\u00A0/g, ' ');
-
-    // 2. Converte \n literais em quebras de linha reais para limpar a estrutura
     rawKeys = rawKeys.replace(/\\n/g, '\n');
-
-    // 3. CORREÇÃO CRUCIAL: Quebras de linha REAIS dentro de strings são inválidas no JSON.
-    // Vamos encontrar o valor da private_key e re-escapar as quebras de linha dentro dela.
     rawKeys = rawKeys.replace(/("private_key":\s*")([\s\S]+?)(")/g, (match, p1, p2, p3) => {
       return p1 + p2.replace(/\n/g, '\\n') + p3;
     });
@@ -63,13 +60,23 @@ async function liberarAcessoCliente(emailNovoUsuario) {
       scopes: ['https://www.googleapis.com/auth/drive'],
     });
 
-    const drive = google.drive({ version: 'v3', auth });
+    driveClient = google.drive({ version: 'v3', auth });
+    return driveClient;
+  } catch (error) {
+    console.error('❌ Erro ao inicializar Google Drive Client:', error.message);
+    return null;
+  }
+}
 
+async function liberarAcessoCliente(emailNovoUsuario) {
+  const drive = await getDriveClient();
+  if (!drive) return;
+
+  try {
     await drive.permissions.create({
-      // Este ID corresponde à sua pasta "SST EM CLOUD"
       fileId: '1LemUFaSmW2vsR7UlprdnTWqJw44VNri7',
       requestBody: {
-        role: 'reader', // Acesso apenas para leitura
+        role: 'reader',
         type: 'user',
         emailAddress: emailNovoUsuario,
       },
@@ -77,9 +84,55 @@ async function liberarAcessoCliente(emailNovoUsuario) {
     });
     console.log(`✅ Acesso liberado para: ${emailNovoUsuario}`);
   } catch (error) {
-    console.error('❌ Erro no Google Drive:', error.message);
+    console.error('❌ Erro no Google Drive (Permissions):', error.message);
   }
 }
+
+// ============ GOOGLE DRIVE API ROUTES ============
+
+// Listar arquivos de uma pasta específica
+app.get('/api/drive/files/:folderId', async (req, res) => {
+  try {
+    const { folderId } = req.params;
+    const drive = await getDriveClient();
+    if (!drive) return res.status(503).json({ error: 'Google Drive service unavailable' });
+
+    const response = await drive.files.list({
+      q: `'${folderId}' in parents and trashed = false`,
+      fields: 'files(id, name, mimeType, webViewLink, iconLink, thumbnailLink, size)',
+      orderBy: 'folder, name',
+    });
+
+    res.json(response.data.files);
+  } catch (error) {
+    console.error('Error listing drive files:', error);
+    res.status(500).json({ error: 'Failed to list files' });
+  }
+});
+
+// Busca global no Drive (dentro da pasta raiz do sistema)
+app.get('/api/drive/search', async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q) return res.json([]);
+
+    const drive = await getDriveClient();
+    if (!drive) return res.status(503).json({ error: 'Google Drive service unavailable' });
+
+    // Busca arquivos que contenham o termo no nome e NÃO sejam pastas (ou sejam, depende do gosto)
+    // Para simplificar, buscamos tudo que o usuário tem acesso via service account dentro da estrutura
+    const response = await drive.files.list({
+      q: `name contains '${q}' and trashed = false`,
+      fields: 'files(id, name, mimeType, webViewLink, iconLink, thumbnailLink, size, parents)',
+      pageSize: 20
+    });
+
+    res.json(response.data.files);
+  } catch (error) {
+    console.error('Error searching drive:', error);
+    res.status(500).json({ error: 'Failed to search drive' });
+  }
+});
 
 // Database configuration
 const { Pool } = pg;
