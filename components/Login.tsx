@@ -150,19 +150,12 @@ export const Login: React.FC<LoginProps> = ({ onBack, onLogin }) => {
           <div className="mt-8 pt-6 border-t border-white/10 text-center">
             <button
               onClick={handleVerPlanos}
-              className="text-xs font-bold text-white/80 hover:text-white transition-all underline decoration-white/20 hover:decoration-white underline-offset-4 uppercase tracking-widest px-4 py-2"
+              className="text-xs font-black text-yellow-300 hover:text-white transition-all uppercase tracking-widest px-4 py-2 animate-pulse whitespace-nowrap"
             >
-              Não tem acesso? Quero acessar
+              Liberar meu acesso agora
             </button>
           </div>
 
-        </div>
-
-        {/* Security Badge Outside */}
-        <div className="text-center mt-6 animate-fadeIn" style={{ animationDelay: '0.2s' }}>
-          <p className="text-[10px] font-bold text-white/80 flex items-center justify-center gap-1.5 uppercase tracking-wider drop-shadow-md">
-            <CheckCircle size={12} className="text-emerald-300" /> Ambiente 100% Seguro
-          </p>
         </div>
 
       </div>
