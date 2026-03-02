@@ -628,10 +628,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           <div className="flex justify-end gap-2">
                             <button
                               onClick={() => onResetPassword(user.email)}
-                              className="group flex items-center gap-1.5 text-slate-500 hover:text-orange-600 px-3 py-1.5 hover:bg-orange-50 rounded-lg transition-all border border-transparent hover:border-orange-200"
-                              title="Enviar Email de Redefinição"
+                              className="p-2 text-slate-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                              title="Resetar Senha"
                             >
-                              <Key size={16} /> <span className="text-xs font-semibold">Resetar Senha</span>
+                              <Key size={18} />
                             </button>
                             <button
                               onClick={() => handleOpenUserModal(user)}

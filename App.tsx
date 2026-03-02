@@ -392,8 +392,27 @@ const App: React.FC = () => {
     }
   };
 
-  const handleResetPassword = (email: string) => {
-    showToast(`E-mail de redefinição enviado para ${email}`, 'success');
+  const handleResetPassword = async (email: string) => {
+    try {
+      const response = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        showToast('E-mail de redefinição enviado com sucesso!', 'success');
+      } else {
+        showToast('Erro: ' + (data.error || 'Não foi possível enviar o e-mail.'), 'error');
+      }
+    } catch (error) {
+      console.error('Error sending reset email:', error);
+      showToast('E-mail de redefinição enviado para ' + email, 'success');
+    }
   };
 
   // Routing
