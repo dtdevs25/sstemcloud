@@ -63,4 +63,5 @@ export interface User {
   password: string; // Em produção real, isso seria um hash
   role: 'admin' | 'user';
   createdAt: string;
+  mustChangePassword?: boolean;
 }

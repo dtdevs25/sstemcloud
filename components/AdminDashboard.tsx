@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { LogOut, Search, Activity, Layout, Users, Plus, Edit2, Trash2, Folder, CheckCircle2, FolderOpen, Save, X, Mail, Key, CloudLightning, LayoutGrid, List as ListIcon, Calendar, ExternalLink, Eye } from 'lucide-react';
+import {
+  LogOut, Search, Activity, Layout, Users, Plus, Edit2, Trash2, Folder,
+  CheckCircle2, FolderOpen, Save, X, Mail, Key, CloudLightning,
+  LayoutGrid, List as ListIcon, Calendar, ExternalLink, Eye,
+  User as LucideUser, FileText
+} from 'lucide-react';
 import { AccessLog, FolderItem, FolderTheme, User } from '../types';
 
 interface AdminDashboardProps {
@@ -124,6 +129,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [userForm, setUserForm] = useState({ name: '', email: '', password: '', role: 'user' as 'user' | 'admin' });
+  const [createdTempPassword, setCreatedTempPassword] = useState<string | null>(null);
+  const [isUserSuccessModalOpen, setIsUserSuccessModalOpen] = useState(false);
 
   // Filter Users
   const filteredUsers = users.filter(user =>
@@ -181,21 +188,39 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setIsUserModalOpen(true);
   };
 
-  const handleSaveUser = (e: React.FormEvent) => {
+  const handleSaveUser = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Se estiver editando e a senha estiver vazia, remove o campo senha do update para não sobrescrever com vazio
-    if (editingUser && !userForm.password) {
-      const { password, ...userWithoutPassword } = userForm;
-      onEditUser(editingUser.id, userWithoutPassword);
-    } else {
-      if (editingUser) {
-        onEditUser(editingUser.id, userForm);
+    if (editingUser) {
+      if (!userForm.password) {
+        const { password, ...userWithoutPassword } = userForm;
+        onEditUser(editingUser.id, userWithoutPassword);
       } else {
-        onAddUser(userForm);
+        onEditUser(editingUser.id, userForm);
+      }
+      setIsUserModalOpen(false);
+    } else {
+      // Create new user (temporary password logic handled by backend)
+      try {
+        const response = await fetch('/api/auth/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(userForm)
+        });
+        const data = await response.json();
+        if (data.success) {
+          onAddUser(data.user); // No need to re-fetch or clear entire state if the component handles it
+          setCreatedTempPassword(data.tempPassword);
+          setIsUserModalOpen(false);
+          setIsUserSuccessModalOpen(true);
+        } else {
+          alert(data.error || 'Erro ao criar usuário');
+        }
+      } catch (err) {
+        console.error('Error creating user:', err);
+        alert('Falha na comunicação com o servidor');
       }
     }
-    setIsUserModalOpen(false);
   };
 
   // Abrir modal de confirmação de exclusão de usuário
@@ -741,87 +766,170 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </div>
       )}
 
-      {/* --- USER MODAL --- */}
+      {/* --- USER MODAL (Modernized) --- */}
       {isUserModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-slate-50">
-              <h3 className="font-bold text-lg text-slate-800">
-                {editingUser ? 'Editar Usuário' : 'Novo Usuário'}
-              </h3>
-              <button onClick={() => setIsUserModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 transition-all">
+          <div
+            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-fadeIn"
+            onClick={() => setIsUserModalOpen(false)}
+          ></div>
+
+          <div className="relative bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col animate-slideUp border border-white/20">
+            {/* Modal Header */}
+            <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-brand-500 text-white rounded-2xl shadow-lg shadow-brand-500/30">
+                  <LucideUser size={22} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-slate-800 leading-none">
+                    {editingUser ? 'Editar Perfil' : 'Novo Cliente'}
+                  </h3>
+                  <p className="text-[10px] text-slate-400 mt-1.5 uppercase tracking-[0.2em] font-black">
+                    {editingUser ? 'Atualizar credenciais' : 'Cadastro de Acesso'}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsUserModalOpen(false)}
+                className="w-10 h-10 flex items-center justify-center hover:bg-slate-200/50 rounded-full transition-all text-slate-400 hover:text-slate-900"
+              >
                 <X size={20} />
               </button>
             </div>
 
-            <form onSubmit={handleSaveUser} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nome Completo</label>
-                <input
-                  type="text"
-                  required
-                  value={userForm.name}
-                  onChange={(e) => setUserForm({ ...userForm, name: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all"
-                  placeholder="Ex: João da Silva"
-                />
+            <form onSubmit={handleSaveUser} className="p-8 space-y-6">
+              <div className="grid grid-cols-1 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Nome Completo</label>
+                  <input
+                    type="text"
+                    required
+                    value={userForm.name}
+                    onChange={(e) => setUserForm({ ...userForm, name: e.target.value })}
+                    className="w-full px-5 py-4 bg-slate-50 border-0 rounded-2xl focus:ring-2 focus:ring-brand-500/20 focus:bg-white text-slate-700 font-bold placeholder-slate-300 transition-all outline-none"
+                    placeholder="Nome do cliente ou empresa"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Email de Acesso</label>
+                  <input
+                    type="email"
+                    required
+                    value={userForm.email}
+                    onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
+                    className="w-full px-5 py-4 bg-slate-50 border-0 rounded-2xl focus:ring-2 focus:ring-brand-500/20 focus:bg-white text-slate-700 font-bold placeholder-slate-300 transition-all outline-none"
+                    placeholder="email@exemplo.com"
+                  />
+                </div>
+
+                {editingUser ? (
+                  <div className="space-y-2">
+                    <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Alterar Senha (Opcional)</label>
+                    <input
+                      type="password"
+                      value={userForm.password}
+                      onChange={(e) => setUserForm({ ...userForm, password: e.target.value })}
+                      className="w-full px-5 py-4 bg-slate-50 border-0 rounded-2xl focus:ring-2 focus:ring-brand-500/20 focus:bg-white text-slate-700 font-bold placeholder-slate-300 transition-all outline-none"
+                      placeholder="Deixe vazio para não alterar"
+                    />
+                  </div>
+                ) : (
+                  <div className="p-5 bg-amber-50 rounded-3xl border border-amber-100/50 flex gap-4">
+                    <div className="w-10 h-10 shrink-0 bg-white rounded-xl shadow-sm flex items-center justify-center text-amber-500">
+                      <Mail size={18} />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-black text-amber-800 uppercase tracking-wide">Senha Temporária</h4>
+                      <p className="text-[11px] text-amber-600 font-medium mt-1 leading-relaxed">
+                        Uma senha segura será gerada automaticamente e enviada para o e-mail do cliente ao salvar.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-widest ml-1">Nível de Permissão</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setUserForm({ ...userForm, role: 'user' })}
+                      className={`py-3 px-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all border-2 ${userForm.role === 'user' ? 'bg-brand-50 border-brand-500 text-brand-700' : 'bg-white border-slate-100 text-slate-400 hover:border-slate-200'}`}
+                    >
+                      Cliente
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setUserForm({ ...userForm, role: 'admin' })}
+                      className={`py-3 px-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all border-2 ${userForm.role === 'admin' ? 'bg-brand-50 border-brand-500 text-brand-700' : 'bg-white border-slate-100 text-slate-400 hover:border-slate-200'}`}
+                    >
+                      Master
+                    </button>
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email de Acesso</label>
-                <input
-                  type="email"
-                  required
-                  value={userForm.email}
-                  onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all"
-                  placeholder="cliente@email.com"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {editingUser ? "Redefinir Senha (Opcional)" : "Senha Inicial"}
-                </label>
-                <input
-                  type="text"
-                  required={!editingUser}
-                  value={userForm.password}
-                  onChange={(e) => setUserForm({ ...userForm, password: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all"
-                  placeholder={editingUser ? "Deixe em branco para manter a atual" : "Defina uma senha"}
-                />
-              </div>
-
-              {/* Only show role selection if editing logic allows, usually admins create users */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Acesso</label>
-                <select
-                  value={userForm.role}
-                  onChange={(e) => setUserForm({ ...userForm, role: e.target.value as 'admin' | 'user' })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sky-500 outline-none"
-                >
-                  <option value="user">Cliente (Acesso Padrão)</option>
-                  <option value="admin">Administrador Master</option>
-                </select>
-              </div>
-
-              <div className="pt-4 flex gap-3">
+              <div className="pt-4 flex gap-4">
                 <button
                   type="button"
                   onClick={() => setIsUserModalOpen(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors"
+                  className="flex-1 py-4 text-sm font-black text-slate-400 hover:text-slate-600 transition-colors uppercase tracking-widest"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 font-medium transition-colors flex items-center justify-center gap-2"
+                  className="flex-[2] py-4 bg-brand-600 hover:bg-brand-700 text-white rounded-2xl font-black text-sm transition-all shadow-xl shadow-brand-500/20 hover:-translate-y-1 uppercase tracking-widest flex items-center justify-center gap-3"
                 >
-                  <Save size={18} /> Salvar Usuário
+                  <Save size={18} />
+                  {editingUser ? 'Atualizar' : 'Criar Acesso'}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* --- USER SUCCESS MODAL --- */}
+      {isUserSuccessModalOpen && createdTempPassword && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-fadeIn">
+          <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-md overflow-hidden animate-slideUp">
+            <div className="p-10 text-center">
+              <div className="w-20 h-20 bg-green-500 text-white rounded-2xl shadow-xl shadow-green-500/30 flex items-center justify-center mx-auto mb-6 scale-110">
+                <CheckCircle2 size={40} />
+              </div>
+
+              <h3 className="text-2xl font-black text-slate-800 mb-2">Usuário Criado!</h3>
+              <p className="text-slate-400 font-medium mb-8">O cliente foi cadastrado e os dados de acesso foram enviados por e-mail.</p>
+
+              <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 mb-8">
+                <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-2">Senha Temporária Gerada</p>
+                <div className="flex items-center justify-center gap-3">
+                  <span className="text-3xl font-black text-brand-600 tracking-[0.2em] font-mono">{createdTempPassword}</span>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(createdTempPassword);
+                      alert('Senha copiada para a área de transferência!');
+                    }}
+                    className="p-2 bg-white rounded-xl shadow-sm text-slate-400 hover:text-brand-500 transition-all border border-slate-100"
+                    title="Copiar Senha"
+                  >
+                    <FileText size={16} />
+                  </button>
+                </div>
+              </div>
+
+              <button
+                onClick={() => {
+                  setIsUserSuccessModalOpen(false);
+                  setCreatedTempPassword(null);
+                }}
+                className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/10"
+              >
+                Concluir
+              </button>
+            </div>
           </div>
         </div>
       )}

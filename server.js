@@ -161,7 +161,8 @@ pool.connect((err, client, release) => {
         login_attempts INTEGER DEFAULT 0,
         locked_until TIMESTAMP WITH TIME ZONE,
         reset_password_token VARCHAR(255),
-        reset_password_expires TIMESTAMP WITH TIME ZONE
+        reset_password_expires TIMESTAMP WITH TIME ZONE,
+        must_change_password BOOLEAN DEFAULT TRUE
       );
 
       -- Add columns if they don't exist
@@ -170,8 +171,12 @@ pool.connect((err, client, release) => {
         IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='app_users' AND column_name='reset_password_token') THEN
           ALTER TABLE app_users ADD COLUMN reset_password_token VARCHAR(255);
         END IF;
-        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='app_users' AND column_name='reset_password_expires') THEN
-          ALTER TABLE app_users ADD COLUMN reset_password_expires TIMESTAMP WITH TIME ZONE;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='app_users' AND column_name='must_change_password') THEN
+          ALTER TABLE app_users ADD COLUMN must_change_password BOOLEAN DEFAULT FALSE;
+          -- Mark existing users as already having changed password so they aren't forced to change it
+          UPDATE app_users SET must_change_password = FALSE;
+          -- Change default to TRUE for FUTURE users
+          ALTER TABLE app_users ALTER COLUMN must_change_password SET DEFAULT TRUE;
         END IF;
       END $$;
 
@@ -300,7 +305,7 @@ app.post('/api/auth/login', async (req, res) => {
 
     // Query user (parameterized query - safe from SQL injection)
     const result = await pool.query(
-      'SELECT id, name, email, password_hash, role, locked_until FROM app_users WHERE LOWER(email) = $1',
+      'SELECT id, name, email, password_hash, role, locked_until, must_change_password FROM app_users WHERE LOWER(email) = $1',
       [sanitizedEmail]
     );
 
@@ -374,7 +379,8 @@ app.post('/api/auth/login', async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        createdAt: user.created_at
+        createdAt: user.created_at,
+        mustChangePassword: user.must_change_password
       }
     });
 
@@ -596,37 +602,108 @@ app.post('/api/auth/reset-password', async (req, res) => {
 // Create new user (admin function)
 app.post('/api/auth/users', async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, role } = req.body;
 
-    if (!name || !email || !password) {
-      return res.status(400).json({ error: 'Nome, email e senha são obrigatórios' });
+    if (!name || !email) {
+      return res.status(400).json({ error: 'Nome e email são obrigatórios' });
     }
 
     // Check if email already exists
-    const existing = await pool.query('SELECT id FROM app_users WHERE LOWER(email) = $1', [email.toLowerCase()]);
+    const existing = await pool.query('SELECT id FROM app_users WHERE LOWER(email) = $1', [email.toLowerCase().trim()]);
     if (existing.rows.length > 0) {
       return res.status(409).json({ error: 'Email já cadastrado' });
     }
 
-    // Hash password with strong salt rounds
-    const passwordHash = await bcrypt.hash(password, 12);
+    // Gerar senha temporária de 8 caracteres
+    const tempPassword = crypto.randomBytes(4).toString('hex').toUpperCase();
+    const passwordHash = await bcrypt.hash(tempPassword, 12);
 
     const result = await pool.query(
-      `INSERT INTO app_users (name, email, password_hash, role) 
-       VALUES ($1, $2, $3, $4) RETURNING id, name, email, role, created_at`,
+      `INSERT INTO app_users (name, email, password_hash, role, must_change_password) 
+           VALUES ($1, $2, $3, $4, TRUE) RETURNING id, name, email, role, created_at`,
       [name, email.toLowerCase().trim(), passwordHash, role || 'user']
     );
+
+    // Enviar email com a senha temporária
+    const mailOptions = {
+      from: `"SST em Cloud" <${process.env.SMTP_USER || 'sstemcloud@ehspro.com.br'}>`,
+      to: email.toLowerCase().trim(),
+      subject: 'Bem-vindo ao SST em Cloud - Seus Dados de Acesso',
+      html: `
+        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px; border: 1px solid #f0f0f0; border-radius: 20px; color: #1e293b; background-color: #ffffff;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <img src="https://sitesstemcloud.com.br/logo.png" alt="SST em Cloud" style="max-height: 60px;">
+          </div>
+          <h2 style="color: #0284c7; text-align: center; margin-bottom: 30px; font-weight: 900;">Bem-vindo ao Time! 🚀</h2>
+          <p style="font-size: 16px; line-height: 1.6;">Olá, <strong>${name}</strong>!</p>
+          <p style="font-size: 16px; line-height: 1.6;">Sua conta no <strong>SST em Cloud</strong> foi criada com sucesso. Abaixo estão as suas credenciais de acesso:</p>
+          
+          <div style="background-color: #f8fafc; padding: 25px; border-radius: 15px; margin: 30px 0; border: 1px dashed #cbd5e1;">
+            <p style="margin: 0 0 10px 0; font-size: 14px; color: #64748b; font-weight: bold; text-transform: uppercase; tracking: 1px;">Usuário/E-mail:</p>
+            <p style="margin: 0 0 20px 0; font-size: 18px; color: #1e293b; font-family: monospace; font-weight: bold;">${email.toLowerCase().trim()}</p>
+            
+            <p style="margin: 0 0 10px 0; font-size: 14px; color: #64748b; font-weight: bold; text-transform: uppercase; tracking: 1px;">Senha Temporária:</p>
+            <p style="margin: 0; font-size: 24px; color: #0284c7; font-family: monospace; font-weight: 900; letter-spacing: 2px;">${tempPassword}</p>
+          </div>
+          
+          <p style="font-size: 14px; color: #94a3b8; font-style: italic; background-color: #fffbeb; padding: 15px; border-radius: 10px; border: 1px solid #fef3c7; color: #92400e;">
+            <strong>⚠️ Atenção:</strong> Por motivos de segurança, você será solicitado a redefinir esta senha no seu primeiro acesso.
+          </p>
+          
+          <div style="text-align: center; margin: 40px 0;">
+            <a href="${req.protocol}://${req.get('host')}" style="background-color: #0284c7; color: #ffffff; padding: 16px 40px; text-decoration: none; border-radius: 50px; font-weight: 900; box-shadow: 0 10px 15px -3px rgba(2, 132, 199, 0.3); display: inline-block;">Acessar a Plataforma</a>
+          </div>
+          
+          <p style="font-size: 12px; color: #94a3b8; text-align: center;">Se você tiver alguma dúvida, entre em contato com o suporte.</p>
+          <hr style="border: 0; border-top: 1px solid #f1f5f9; margin: 40px 0;">
+          <p style="font-size: 10px; color: #cbd5e1; text-align: center;">SST em Cloud &copy; ${new Date().getFullYear()} - Todos os direitos reservados</p>
+        </div>
+      `
+    };
 
     // Liberar acesso no Google Drive
     if (role !== 'admin') {
       liberarAcessoCliente(email.toLowerCase().trim());
     }
 
-    res.json({ success: true, user: result.rows[0] });
+    try {
+      await transporter.sendMail(mailOptions);
+    } catch (mailErr) {
+      console.warn('⚠️ Erro ao enviar email de boas-vindas:', mailErr.message);
+      // Continuamos mesmo se o email falhar, para retornar o usuário criado (ou poderíamos lançar erro)
+    }
+
+    res.json({ success: true, user: result.rows[0], tempPassword }); // Enviamos para o admin ver também na tela caso queira copiar
 
   } catch (error) {
     console.error('Error creating user:', error);
     res.status(500).json({ error: 'Failed to create user' });
+  }
+});
+
+// Forçar redefinição de senha no primeiro acesso
+app.post('/api/auth/force-reset', async (req, res) => {
+  try {
+    const { email, currentPassword, newPassword } = req.body;
+
+    if (!email || !currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
+    }
+
+    const result = await pool.query('SELECT id, password_hash FROM app_users WHERE LOWER(email) = $1', [email.toLowerCase().trim()]);
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Usuário não encontrado' });
+
+    const user = result.rows[0];
+    const isMatch = await bcrypt.compare(currentPassword, user.password_hash);
+    if (!isMatch) return res.status(401).json({ error: 'Senha atual incorreta' });
+
+    const newHash = await bcrypt.hash(newPassword, 12);
+    await pool.query('UPDATE app_users SET password_hash = $1, must_change_password = FALSE WHERE id = $2', [newHash, user.id]);
+
+    res.json({ success: true, message: 'Senha atualizada com sucesso!' });
+  } catch (error) {
+    console.error('Error forcing password reset:', error);
+    res.status(500).json({ error: 'Falha ao atualizar senha' });
   }
 });
 

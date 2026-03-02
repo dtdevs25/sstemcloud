@@ -13,6 +13,7 @@ import { Login } from './components/Login';
 import { Dashboard } from './components/Dashboard';
 import { AdminDashboard } from './components/AdminDashboard';
 import { ResetPassword } from './components/ResetPassword';
+import { ForcePasswordReset } from './components/ForcePasswordReset';
 import { PaymentModal } from './components/PaymentModal';
 import { AccessLog, FolderItem, User } from './types';
 import { CheckCircle2, XCircle, X } from 'lucide-react';
@@ -195,6 +196,11 @@ const App: React.FC = () => {
 
         setIsAuthenticated(true);
         setCurrentUser(apiUser);
+
+        if (data.user.mustChangePassword) {
+          setCurrentPage('force-reset');
+          return;
+        }
 
         if (apiUser.role === 'admin') {
           setCurrentPage('admin');
@@ -491,6 +497,18 @@ const App: React.FC = () => {
 
   if (currentPage === 'login') {
     return <Login onBack={() => setCurrentPage('landing')} onLogin={handleLogin} />;
+  }
+
+  if (currentPage === 'force-reset' && currentUser) {
+    return (
+      <ForcePasswordReset
+        email={currentUser.email}
+        onSuccess={() => {
+          showToast('Senha atualizada com sucesso!', 'success');
+          setCurrentPage(currentUser.role === 'admin' ? 'admin' : 'dashboard');
+        }}
+      />
+    );
   }
 
   // Landing Page
