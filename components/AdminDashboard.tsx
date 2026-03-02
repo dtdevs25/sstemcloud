@@ -16,6 +16,7 @@ interface AdminDashboardProps {
   onEditUser: (id: string, user: Partial<User>) => void;
   onDeleteUser: (id: string) => void;
   onResetPassword: (id: string) => void;
+  currentUser: User | null;
 }
 
 const themeOptions: { value: FolderTheme; label: string; class: string }[] = [
@@ -64,7 +65,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onAddUser,
   onEditUser,
   onDeleteUser,
-  onResetPassword
+  onResetPassword,
+  currentUser
 }) => {
   const [activeTab, setActiveTab] = useState<'logs' | 'content' | 'users'>('logs');
 
@@ -200,7 +202,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
 
-      {/* Header Admin Estilo Navbar */}
+      {/* Header Admin Estilo Navbar Simplificado */}
       <header className="bg-white/95 backdrop-blur-md border-b border-gray-100 sticky top-0 z-40 transition-all duration-300 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-20 items-center">
@@ -209,36 +211,29 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <div className="flex-shrink-0 flex items-center cursor-pointer group">
                 <img
                   src="/logo.png"
-                  alt="Logo SSTemCloud"
-                  className="h-12 w-auto mr-3 object-contain transition-transform duration-300 group-hover:scale-105"
+                  alt="Logo SST em Cloud"
+                  className="h-10 w-auto mr-3 object-contain transition-transform duration-300 group-hover:scale-105"
                 />
-                <span className="font-extrabold text-2xl text-gray-900 tracking-tight group-hover:text-brand-700 transition-colors">
-                  SSTem<span className="text-brand-500">Cloud</span>
-                  <span className="ml-2 text-xs font-bold uppercase tracking-widest text-brand-600 bg-brand-50 px-2 py-0.5 rounded-md border border-brand-100">Admin</span>
+                <span className="font-extrabold text-xl text-gray-900 tracking-tight group-hover:text-brand-700 transition-colors">
+                  SST em <span className="text-brand-500">CLOUD</span>
                 </span>
               </div>
             </div>
 
-            <div className="hidden lg:flex items-center space-x-6 mx-8">
-              <a href="/" className="text-gray-500 hover:text-brand-600 font-medium text-sm transition-colors">Início</a>
-              <a href="/#pricing" className="text-gray-500 hover:text-brand-600 font-medium text-sm transition-colors">Comprar</a>
-              <a href="/#depoimentos" className="text-gray-500 hover:text-brand-600 font-medium text-sm transition-colors">Depoimentos</a>
-              <a href="/#faq" className="text-gray-500 hover:text-brand-600 font-medium text-sm transition-colors">FAQ</a>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <div className="hidden sm:flex items-center gap-2 mr-2">
-                <div className="px-3 py-1 bg-slate-50 rounded-full text-[10px] font-black text-slate-400 border border-slate-100 uppercase tracking-widest whitespace-nowrap">
-                  Master Access
-                </div>
+            <div className="flex items-center gap-6">
+              <div className="flex flex-col items-end">
+                <span className="text-sm font-bold text-gray-900 leading-none">{currentUser?.name || 'Administrador'}</span>
+                <span className="text-[10px] font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-md border border-brand-100 uppercase tracking-widest mt-1">
+                  Administrador Master
+                </span>
               </div>
 
               <button
                 onClick={onLogout}
-                className="inline-flex items-center justify-center px-6 py-2 border-2 border-red-50 rounded-full text-red-500 font-bold hover:bg-red-50 hover:border-red-100 transition-all text-sm uppercase tracking-wide gap-2 group"
+                className="w-10 h-10 flex items-center justify-center bg-red-50 text-red-500 rounded-full hover:bg-red-100 transition-all shadow-sm border border-red-100 group"
+                title="Sair"
               >
-                <LogOut size={16} className="group-hover:translate-x-0.5 transition-transform" />
-                <span>Sair</span>
+                <LogOut size={18} className="group-hover:translate-x-0.5 transition-transform" />
               </button>
             </div>
           </div>

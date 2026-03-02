@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { Search, Folder, MoreVertical, ExternalLink, LogOut, CloudLightning, LayoutGrid, List as ListIcon, CheckCircle2 } from 'lucide-react';
-import { FolderItem } from '../types';
+import { FolderItem, User } from '../types';
 
 interface DashboardProps {
   folders: FolderItem[];
+  currentUser: User | null;
   onLogout: () => void;
   onFolderClick: (folderName: string) => void;
+  onDeleteUser?: (id: string) => void; // Added based on destructuring in Dashboard component
+  onResetPassword?: (id: string) => void; // Added based on destructuring in Dashboard component
 }
 
 // Helper para mapear temas para classes CSS (caso não venha do suporte legado)
@@ -31,7 +34,7 @@ const getThemeClasses = (theme: string) => {
   return themes[theme] || themes.green;
 };
 
-export const Dashboard: React.FC<DashboardProps> = ({ folders, onLogout, onFolderClick }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ folders, currentUser, onLogout, onFolderClick, onDeleteUser, onResetPassword }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedFolderId, setSelectedFolderId] = useState<number | null>(null);
@@ -56,7 +59,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ folders, onLogout, onFolde
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
 
-      {/* Header Estilo Navbar */}
+      {/* Header Estilo Navbar Simplificado */}
       <header className="bg-white/95 backdrop-blur-md border-b border-gray-100 sticky top-0 z-40 transition-all duration-300 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-20 items-center">
@@ -65,66 +68,31 @@ export const Dashboard: React.FC<DashboardProps> = ({ folders, onLogout, onFolde
               <div className="flex-shrink-0 flex items-center cursor-pointer group">
                 <img
                   src="/logo.png"
-                  alt="Logo SSTemCloud"
-                  className="h-12 w-auto mr-3 object-contain transition-transform duration-300 group-hover:scale-105"
+                  alt="Logo SST em Cloud"
+                  className="h-10 w-auto mr-3 object-contain transition-transform duration-300 group-hover:scale-105"
                 />
-                <span className="font-extrabold text-2xl text-gray-900 tracking-tight group-hover:text-brand-700 transition-colors">
-                  SSTem<span className="text-brand-500">Cloud</span>
+                <span className="font-extrabold text-xl text-gray-900 tracking-tight group-hover:text-brand-700 transition-colors">
+                  SST em <span className="text-brand-500">CLOUD</span>
                 </span>
               </div>
             </div>
 
-            <div className="flex-1 max-w-xs mx-8 hidden xl:block">
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Search className="h-4 w-4 text-gray-400 group-focus-within:text-brand-500 transition-colors" />
-                </div>
-                <input
-                  type="text"
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-100 rounded-full bg-gray-50 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all text-sm"
-                  placeholder="Pesquisar..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className="hidden md:flex items-center space-x-6 mr-6">
-              <a href="/" className="text-gray-500 hover:text-brand-600 font-medium text-sm transition-colors">Início</a>
-              <a href="/#pricing" className="text-gray-500 hover:text-brand-600 font-medium text-sm transition-colors">Comprar</a>
-              <a href="/#depoimentos" className="text-gray-500 hover:text-brand-600 font-medium text-sm transition-colors">Depoimentos</a>
-              <a href="/#faq" className="text-gray-500 hover:text-brand-600 font-medium text-sm transition-colors">FAQ</a>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <div className="hidden sm:flex items-center gap-2 mr-2">
-                <div className="w-8 h-8 rounded-full bg-brand-50 flex items-center justify-center text-brand-600 font-bold text-xs ring-2 ring-brand-100">
-                  U
-                </div>
+            <div className="flex items-center gap-6">
+              <div className="flex flex-col items-end">
+                <span className="text-sm font-bold text-gray-900 leading-none">{currentUser?.name || 'Usuário'}</span>
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
+                  {currentUser?.role === 'admin' ? 'Administrador Master' : 'Cliente'}
+                </span>
               </div>
 
               <button
                 onClick={onLogout}
-                className="inline-flex items-center justify-center px-6 py-2 border-2 border-red-50 rounded-full text-red-500 font-bold hover:bg-red-50 hover:border-red-100 transition-all text-sm uppercase tracking-wide gap-2 group"
+                className="w-10 h-10 flex items-center justify-center bg-red-50 text-red-500 rounded-full hover:bg-red-100 transition-all shadow-sm border border-red-100 group"
+                title="Sair"
               >
-                <LogOut size={16} className="group-hover:translate-x-0.5 transition-transform" />
-                <span>Sair</span>
+                <LogOut size={18} className="group-hover:translate-x-0.5 transition-transform" />
               </button>
             </div>
-          </div>
-        </div>
-
-        {/* Mobile Search - Ajustado para o novo estilo */}
-        <div className="lg:hidden px-4 pb-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <input
-              type="text"
-              className="block w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-100 rounded-full text-sm focus:ring-2 focus:ring-brand-500/20 outline-none transition-all"
-              placeholder="Pesquisar..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
           </div>
         </div>
       </header>

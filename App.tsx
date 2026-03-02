@@ -380,6 +380,7 @@ const App: React.FC = () => {
             logs={logs}
             folders={folders}
             users={users}
+            currentUser={currentUser}
             onLogout={handleLogout}
             onAddFolder={handleAddFolder}
             onEditFolder={handleEditFolder}
@@ -427,7 +428,7 @@ const App: React.FC = () => {
       );
     }
     if (currentPage === 'dashboard') {
-      return <Dashboard folders={folders} onLogout={handleLogout} onFolderClick={logAccess} />;
+      return <Dashboard folders={folders} currentUser={currentUser} onLogout={handleLogout} onFolderClick={logAccess} />;
     }
   }
 
