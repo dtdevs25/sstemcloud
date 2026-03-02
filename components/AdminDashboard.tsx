@@ -223,8 +223,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <div className="flex items-center gap-6">
               <div className="flex flex-col items-end">
                 <span className="text-sm font-bold text-gray-900 leading-none">{currentUser?.name || 'Administrador'}</span>
-                <span className="text-[10px] font-bold text-brand-600 bg-brand-50 px-2 py-0.5 rounded-md border border-brand-100 uppercase tracking-widest mt-1">
-                  Administrador Master
+                <span className="text-[10px] font-bold text-brand-600 uppercase tracking-widest mt-1">
+                  Master
                 </span>
               </div>
 

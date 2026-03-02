@@ -81,7 +81,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ folders, currentUser, onLo
               <div className="flex flex-col items-end">
                 <span className="text-sm font-bold text-gray-900 leading-none">{currentUser?.name || 'Usuário'}</span>
                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
-                  {currentUser?.role === 'admin' ? 'Administrador Master' : 'Cliente'}
+                  {currentUser?.role === 'admin' ? 'Master' : 'Cliente'}
                 </span>
               </div>
 
