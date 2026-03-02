@@ -150,7 +150,7 @@ export const Login: React.FC<LoginProps> = ({ onBack, onLogin }) => {
           <div className="mt-6 pt-4 border-t border-white/10 text-center">
             <button
               onClick={handleVerPlanos}
-              className="text-[10px] font-black text-amber-400 hover:text-white transition-all uppercase tracking-widest px-4 py-1 animate-pulse whitespace-nowrap"
+              className="text-xs font-black text-blue-900 hover:text-blue-950 transition-all uppercase tracking-widest px-4 py-1 animate-pulse whitespace-nowrap"
             >
               Liberar meu acesso agora
             </button>
