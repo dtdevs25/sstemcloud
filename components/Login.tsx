@@ -69,8 +69,8 @@ export const Login: React.FC<LoginProps> = ({ onBack, onLogin }) => {
 
           {/* Header Minimalista */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-white/30 to-white/5 shadow-lg mb-4 border border-white/40 backdrop-blur-sm ring-1 ring-white/20">
-              <CloudLightning className="w-8 h-8 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]" />
+            <div className="inline-flex items-center justify-center w-24 h-24 rounded-2xl bg-white/10 shadow-lg mb-4 border border-white/20 backdrop-blur-sm ring-1 ring-white/10 overflow-hidden">
+              <img src="/logo.png" alt="SSTemCLOUD Logo" className="w-full h-full object-cover" />
             </div>
             <h2 className="text-3xl font-black text-white tracking-tight drop-shadow-md">Bem-vindo</h2>
             <p className="text-blue-50 font-semibold text-sm mt-1 drop-shadow-sm opacity-90">Acesse sua área exclusiva</p>
