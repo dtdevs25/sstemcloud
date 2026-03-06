@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { X, CreditCard, QrCode, Copy, CheckCircle, ExternalLink, Zap, MessageCircle } from 'lucide-react';
 import { Button } from './Button';
 
@@ -7,69 +7,61 @@ interface PaymentModalProps {
   onClose: () => void;
 }
 
+// Algoritmo de CRC16 CCITT-FALSE verificado
+const calculateCRC16 = (data: string): string => {
+  let crc = 0xFFFF;
+  const polynomial = 0x1021;
+  for (let i = 0; i < data.length; i++) {
+    crc ^= (data.charCodeAt(i) << 8);
+    for (let j = 0; j < 8; j++) {
+      if ((crc & 0x8000) !== 0) {
+        crc = ((crc << 1) ^ polynomial) & 0xFFFF;
+      } else {
+        crc = (crc << 1) & 0xFFFF;
+      }
+    }
+  }
+  return (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+};
+
 export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) => {
   const [copied, setCopied] = useState(false);
 
-  // Configurações do Pix
-  const pixData = {
-    key: "19991472282",
-    name: "DANIEL PEREIRA DOS SANTOS",
-    city: "SAO PAULO",
-    amount: "160.00"
-  };
+  // Filtro de caracteres para o Pix (Apenas letras, números e espaços)
+  const clean = (str: string) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Z0-9 ]/gi, "").toUpperCase();
 
-  if (!isOpen) return null;
+  // Payload Pix memorizado para evitar flicker e erros de CRC
+  const pixPayload = useMemo(() => {
+    const key = "19991472282";
+    const name = "DANIEL PEREIRA DOS SANTOS";
+    const city = "SAO PAULO";
+    const amount = "160.00";
 
-  // Função para gerar o Payload Pix (Padrao EMV QRCPS-MPM)
-  const generatePixPayload = () => {
     const formatField = (id: string, value: string) => {
       const len = value.length.toString().padStart(2, '0');
       return `${id}${len}${value}`;
     };
 
-    // Remove acentos e caracteres especiais para garantir compatibilidade
-    const cleanStr = (str: string) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9 ]/g, "").toUpperCase();
+    const gui = formatField('00', 'br.gov.bcb.pix');
+    const keyField = formatField('01', key);
+    const merchantAccount = formatField('26', gui + keyField);
+    const mcc = formatField('52', '0000');
+    const currency = formatField('53', '986');
+    const amountField = formatField('54', amount);
+    const country = formatField('58', 'BR');
+    const nameField = formatField('59', clean(name).substring(0, 25));
+    const cityField = formatField('60', clean(city).substring(0, 15));
+    const additionalData = formatField('62', formatField('05', '***'));
 
-    const merchantAccountInfo = formatField('00', 'br.gov.bcb.pix') + formatField('01', pixData.key);
-
-    let payload = '000201' +
-      formatField('26', merchantAccountInfo) +
-      '52040000' +
-      '5303986' +
-      formatField('54', pixData.amount) +
-      '5802BR' +
-      formatField('59', cleanStr(pixData.name).substring(0, 25)) +
-      formatField('60', cleanStr(pixData.city).substring(0, 15)) +
-      '62070503***' +
-      '6304';
-
-    // Cálculo do CRC16 (CCITT-FALSE / POLY 0x1021 / INIT 0xFFFF)
-    const getCRC16 = (data: string) => {
-      let crc = 0xFFFF;
-      const polynomial = 0x1021;
-      for (let i = 0; i < data.length; i++) {
-        let b = data.charCodeAt(i);
-        for (let j = 0; j < 8; j++) {
-          let bit = ((b >> (7 - j) & 1) === 1);
-          let c15 = ((crc >> 15 & 1) === 1);
-          crc <<= 1;
-          if (c15 !== bit) crc ^= polynomial;
-        }
-      }
-      return (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
-    };
-
-    return payload + getCRC16(payload);
-  };
-
-  const pixPayload = generatePixPayload();
+    const payload = '000201' + merchantAccount + mcc + currency + amountField + country + nameField + cityField + additionalData + '6304';
+    return payload + calculateCRC16(payload);
+  }, []);
 
   const handleCopyPix = () => {
     navigator.clipboard.writeText(pixPayload);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
-
   const handleHotmartRedirect = () => {
     window.open('https://pay.hotmart.com/G31174149Q?off=om2yn0en&checkoutMode=10&offDiscount=S%C3%93HOJE&src=paginadevendas', '_blank');
   };
@@ -79,128 +71,120 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) =
     window.open(`https://wa.me/5519991472282?text=${message}`, '_blank');
   };
 
+  if (!isOpen) return null;
+
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
-      <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-md">
+      <div className="relative bg-white rounded-[2rem] shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[90vh] sm:max-h-[85vh] animate-fadeIn">
 
         {/* Header Azul - Ultra Compacto */}
-        <div className="bg-blue-600 py-2 px-4 flex justify-between items-center text-white shrink-0">
-          <p className="text-white font-bold text-sm">Escolha a melhor forma de pagamento</p>
+        <div className="bg-blue-600 py-3 px-6 flex justify-between items-center text-white shrink-0">
+          <p className="text-white font-bold text-sm uppercase tracking-tight">Pagamento Seguro</p>
           <button
             onClick={onClose}
-            className="p-1 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+            className="p-1.5 bg-white/10 hover:bg-white/20 rounded-full transition-all active:scale-95"
           >
-            <X size={18} />
+            <X size={20} />
           </button>
         </div>
 
         {/* Body */}
-        <div className="p-5 md:p-6 overflow-y-auto bg-slate-50">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="p-4 md:p-10 overflow-y-auto bg-slate-50 custom-scrollbar">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-10">
 
             {/* OPÇÃO 1: HOTMART */}
-            <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:border-orange-200 hover:shadow-md transition-all flex flex-col">
-
-              <div className="mb-6 flex justify-center">
-                <img src="https://i.pinimg.com/736x/63/bb/dc/63bbdca7af4430b13d271eab29287dcb.jpg" alt="Hotmart" className="h-20 w-auto object-contain transition-all" />
+            <div className="bg-white p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm flex flex-col border-b-4 border-b-orange-200">
+              <div className="mb-6 flex justify-center h-16">
+                <img src="https://i.pinimg.com/736x/63/bb/dc/63bbdca7af4430b13d271eab29287dcb.jpg" alt="Hotmart" className="h-full w-auto object-contain" />
               </div>
 
-              <div className="flex items-center gap-3 mb-4">
-                <div className="bg-orange-100 p-3 rounded-xl text-orange-600">
-                  <CreditCard size={28} />
+              <div className="flex items-center gap-4 mb-6">
+                <div className="bg-orange-100 p-3 rounded-2xl text-orange-600">
+                  <CreditCard size={24} />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-slate-800">Plataforma Hotmart</h3>
-                  <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Cartão / Boleto / Pix</p>
+                  <h3 className="font-extrabold text-lg text-slate-800 leading-tight">Cartão ou Boleto</h3>
+                  <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">Plataforma Hotmart</p>
                 </div>
               </div>
 
-              <ul className="space-y-3 mb-6 flex-1">
-                <li className="flex items-start gap-2 text-sm text-slate-600">
-                  <CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" />
-                  <span>Parcele em até <strong>12x no cartão</strong></span>
-                </li>
-                <li className="flex items-start gap-2 text-sm text-slate-600">
-                  <CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" />
-                  <span>Aceita Visa, Master, Elo e outros</span>
-                </li>
-                <li className="flex items-start gap-2 text-sm text-slate-600">
-                  <CheckCircle size={16} className="text-green-500 mt-0.5 shrink-0" />
-                  <span>Compra Segura e Garantia de 7 dias</span>
-                </li>
-              </ul>
+              <div className="space-y-3 mb-8 flex-1">
+                <div className="flex items-start gap-2 text-sm text-slate-600 font-medium">
+                  <CheckCircle size={16} className="text-green-500 mt-0.5" />
+                  <span>Parcelamento em até 12x</span>
+                </div>
+                <div className="flex items-start gap-2 text-sm text-slate-600 font-medium">
+                  <CheckCircle size={16} className="text-green-500 mt-0.5" />
+                  <span>Liberação automática</span>
+                </div>
+              </div>
 
               <Button
                 onClick={handleHotmartRedirect}
-                className="w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-orange-200 flex items-center justify-center gap-2 text-base"
+                className="w-full bg-orange-600 hover:bg-orange-700 text-white font-black py-4 rounded-2xl shadow-lg shadow-orange-100 flex items-center justify-center gap-2 text-base transition-all active:scale-95"
               >
-                Pagar na Hotmart <ExternalLink size={18} />
+                IR PARA HOTMART <ExternalLink size={18} />
               </Button>
             </div>
 
             {/* OPÇÃO 2: PIX DIRETO */}
-            <div className="bg-white p-5 rounded-2xl border-2 border-green-500 shadow-xl relative overflow-hidden flex flex-col">
-              <div className="absolute top-0 right-0 bg-green-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl uppercase tracking-wider">
-                Liberação Imediata
+            <div className="bg-white p-6 md:p-8 rounded-3xl border-2 border-green-500 shadow-xl relative flex flex-col overflow-hidden">
+              <div className="absolute top-0 right-0 bg-green-500 text-white text-[10px] font-black px-4 py-1.5 rounded-bl-2xl uppercase tracking-tighter">
+                Preço Promocional
               </div>
 
-              <div className="flex items-center gap-3 mb-3">
-                <div className="bg-green-100 p-3 rounded-xl text-green-600">
-                  <QrCode size={28} />
+              <div className="flex items-center gap-4 mb-6">
+                <div className="bg-green-100 p-3 rounded-2xl text-green-600">
+                  <QrCode size={24} />
                 </div>
-                <div>
-                  <h3 className="font-bold text-lg text-slate-800">Pix Direto</h3>
-                  <div className="flex flex-col">
-                    <p className="text-xs text-green-600 font-bold uppercase tracking-wider flex items-center gap-1">
-                      <Zap size={12} fill="currentColor" /> Bônus Liberados Agora
-                    </p>
-                    <p className="text-sm font-black text-slate-900 mt-1">Valor: R$ 160,00</p>
-                  </div>
+                <div className="flex flex-col">
+                  <h3 className="font-extrabold text-lg text-slate-800 leading-tight">Pix Direto</h3>
+                  <p className="text-xs text-green-600 font-black uppercase flex items-center gap-1">
+                    <Zap size={12} fill="currentColor" /> R$ 160,00 À VISTA
+                  </p>
                 </div>
               </div>
 
-              <div className="flex flex-col items-center justify-center mb-4 bg-slate-50 p-2 rounded-xl border border-dashed border-slate-300">
-                {/* QR Code Aumentado com Payload Pix Real */}
-                <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(pixPayload)}`}
-                  alt="QR Code Pix"
-                  className="w-32 h-32 mix-blend-multiply mb-2"
-                />
+              <div className="flex flex-col items-center justify-center mb-6 bg-slate-50 p-6 rounded-[2rem] border border-dashed border-slate-300">
+                <div className="bg-white p-3 rounded-2xl shadow-sm mb-4">
+                  <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(pixPayload)}`}
+                    alt="QR Code Pix"
+                    className="w-32 h-32 md:w-40 md:h-40 mix-blend-multiply"
+                  />
+                </div>
 
-                <div className="text-center w-full pt-2 border-t border-slate-200 mt-1">
-                  <p className="text-sm font-bold text-slate-700">Daniel Pereira dos Santos</p>
-                  <p className="text-xs text-slate-500 uppercase font-semibold">Banco: Nubank</p>
+                <div className="text-center w-full">
+                  <p className="text-sm font-black text-slate-800">DANIEL PEREIRA DOS SANTOS</p>
+                  <p className="text-[10px] text-slate-500 font-bold uppercase">Nubank • Chave Celular</p>
                 </div>
               </div>
 
-              <div className="mb-4">
-                {/* O botão agora copia o payload completo do Pix Copia e Cola */}
+              <div className="space-y-3 mt-auto">
                 <button
                   onClick={handleCopyPix}
-                  className={`w-full py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${copied ? 'bg-slate-700 text-white' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}`}
+                  className={`w-full py-4 rounded-2xl font-black text-sm transition-all flex items-center justify-center gap-2 active:scale-95 ${copied ? 'bg-slate-800 text-white shadow-inner' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
                 >
                   {copied ? <CheckCircle size={18} /> : <Copy size={18} />}
-                  {copied ? 'Pix Copia e Cola Copiado!' : 'Copiar Pix Copia e Cola'}
+                  {copied ? 'CÓDIGO COPIADO!' : 'PIX COPIA E COLA'}
+                </button>
+
+                <button
+                  onClick={handleWhatsAppConfirm}
+                  className="w-full bg-green-500 hover:bg-green-600 text-white font-black py-4 rounded-2xl shadow-lg shadow-green-100 flex items-center justify-center gap-2 text-base transition-all active:scale-95"
+                >
+                  <MessageCircle size={20} />
+                  ENVIAR COMPROVANTE
                 </button>
               </div>
-
-              <button
-                onClick={handleWhatsAppConfirm}
-                className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-green-200 flex items-center justify-center gap-2 text-base transition-colors mt-auto"
-              >
-                <MessageCircle size={20} />
-                Informar Pagamento
-              </button>
             </div>
-
 
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="bg-gray-50 p-3 text-center border-t border-gray-100">
-          <p className="text-xs text-gray-400 flex items-center justify-center gap-1">
-            <CheckCircle size={12} /> Compra 100% Segura. Seus dados estão protegidos.
+        <div className="bg-white p-4 text-center border-t border-slate-100 shrink-0">
+          <p className="text-[10px] text-slate-400 font-bold flex items-center justify-center gap-1 uppercase tracking-widest">
+            <CheckCircle size={12} /> Transação 100% Criptografada e Segura
           </p>
         </div>
 
