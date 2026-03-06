@@ -28,7 +28,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) =
     };
 
     // Remove acentos e caracteres especiais para garantir compatibilidade
-    const cleanStr = (str: string) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+    const cleanStr = (str: string) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9 ]/g, "").toUpperCase();
 
     const merchantAccountInfo = formatField('00', 'br.gov.bcb.pix') + formatField('01', pixData.key);
 
@@ -43,20 +43,23 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) =
       '62070503***' +
       '6304';
 
-    // Cálculo simplificado do CRC16 (CCITT-FALSE)
-    let crc = 0xFFFF;
-    for (let i = 0; i < payload.length; i++) {
-      crc ^= (payload.charCodeAt(i) << 8);
-      for (let j = 0; j < 8; j++) {
-        if ((crc & 0x8000) !== 0) {
-          crc = ((crc << 1) ^ 0x1021) & 0xFFFF;
-        } else {
-          crc = (crc << 1) & 0xFFFF;
+    // Cálculo do CRC16 (CCITT-FALSE / POLY 0x1021 / INIT 0xFFFF)
+    const getCRC16 = (data: string) => {
+      let crc = 0xFFFF;
+      const polynomial = 0x1021;
+      for (let i = 0; i < data.length; i++) {
+        let b = data.charCodeAt(i);
+        for (let j = 0; j < 8; j++) {
+          let bit = ((b >> (7 - j) & 1) === 1);
+          let c15 = ((crc >> 15 & 1) === 1);
+          crc <<= 1;
+          if (c15 !== bit) crc ^= polynomial;
         }
       }
-    }
-    const finalCrc = crc.toString(16).toUpperCase().padStart(4, '0');
-    return payload + finalCrc;
+      return (crc & 0xFFFF).toString(16).toUpperCase().padStart(4, '0');
+    };
+
+    return payload + getCRC16(payload);
   };
 
   const pixPayload = generatePixPayload();
