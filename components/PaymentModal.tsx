@@ -9,12 +9,60 @@ interface PaymentModalProps {
 
 export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) => {
   const [copied, setCopied] = useState(false);
-  const pixKey = "19991472282";
+
+  // Configurações do Pix
+  const pixData = {
+    key: "19991472282",
+    name: "DANIEL PEREIRA DOS SANTOS",
+    city: "SAO PAULO",
+    amount: "160.00"
+  };
 
   if (!isOpen) return null;
 
+  // Função para gerar o Payload Pix (Padrao EMV QRCPS-MPM)
+  const generatePixPayload = () => {
+    const formatField = (id: string, value: string) => {
+      const len = value.length.toString().padStart(2, '0');
+      return `${id}${len}${value}`;
+    };
+
+    // Remove acentos e caracteres especiais para garantir compatibilidade
+    const cleanStr = (str: string) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+
+    const merchantAccountInfo = formatField('00', 'br.gov.bcb.pix') + formatField('01', pixData.key);
+
+    let payload = '000201' +
+      formatField('26', merchantAccountInfo) +
+      '52040000' +
+      '5303986' +
+      formatField('54', pixData.amount) +
+      '5802BR' +
+      formatField('59', cleanStr(pixData.name).substring(0, 25)) +
+      formatField('60', cleanStr(pixData.city).substring(0, 15)) +
+      '62070503***' +
+      '6304';
+
+    // Cálculo simplificado do CRC16 (CCITT-FALSE)
+    let crc = 0xFFFF;
+    for (let i = 0; i < payload.length; i++) {
+      crc ^= (payload.charCodeAt(i) << 8);
+      for (let j = 0; j < 8; j++) {
+        if ((crc & 0x8000) !== 0) {
+          crc = ((crc << 1) ^ 0x1021) & 0xFFFF;
+        } else {
+          crc = (crc << 1) & 0xFFFF;
+        }
+      }
+    }
+    const finalCrc = crc.toString(16).toUpperCase().padStart(4, '0');
+    return payload + finalCrc;
+  };
+
+  const pixPayload = generatePixPayload();
+
   const handleCopyPix = () => {
-    navigator.clipboard.writeText(pixKey);
+    navigator.clipboard.writeText(pixPayload);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -24,7 +72,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) =
   };
 
   const handleWhatsAppConfirm = () => {
-    const message = encodeURIComponent("Olá Daniel! Realizei o pagamento via Pix para o SST em Cloud. Segue o comprovante.");
+    const message = encodeURIComponent("Olá Daniel! Realizei o pagamento via Pix de R$ 160,00 para o SST em Cloud. Segue o comprovante.");
     window.open(`https://wa.me/5519991472282?text=${message}`, '_blank');
   };
 
@@ -99,16 +147,19 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) =
                 </div>
                 <div>
                   <h3 className="font-bold text-lg text-slate-800">Pix Direto</h3>
-                  <p className="text-xs text-green-600 font-bold uppercase tracking-wider flex items-center gap-1">
-                    <Zap size={12} fill="currentColor" /> Bônus Liberados Agora
-                  </p>
+                  <div className="flex flex-col">
+                    <p className="text-xs text-green-600 font-bold uppercase tracking-wider flex items-center gap-1">
+                      <Zap size={12} fill="currentColor" /> Bônus Liberados Agora
+                    </p>
+                    <p className="text-sm font-black text-slate-900 mt-1">Valor: R$ 160,00</p>
+                  </div>
                 </div>
               </div>
 
               <div className="flex flex-col items-center justify-center mb-4 bg-slate-50 p-2 rounded-xl border border-dashed border-slate-300">
-                {/* QR Code Aumentado (w-32 h-32 = 128px) */}
+                {/* QR Code Aumentado com Payload Pix Real */}
                 <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${pixKey}`}
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(pixPayload)}`}
                   alt="QR Code Pix"
                   className="w-32 h-32 mix-blend-multiply mb-2"
                 />
@@ -120,13 +171,13 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) =
               </div>
 
               <div className="mb-4">
-                {/* Exibindo apenas o botão, sem o valor da chave */}
+                {/* O botão agora copia o payload completo do Pix Copia e Cola */}
                 <button
                   onClick={handleCopyPix}
                   className={`w-full py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${copied ? 'bg-slate-700 text-white' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}`}
                 >
                   {copied ? <CheckCircle size={18} /> : <Copy size={18} />}
-                  {copied ? 'Chave Copiada!' : 'Copiar Chave Pix'}
+                  {copied ? 'Pix Copia e Cola Copiado!' : 'Copiar Pix Copia e Cola'}
                 </button>
               </div>
 
@@ -138,6 +189,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) =
                 Informar Pagamento
               </button>
             </div>
+
 
           </div>
         </div>
