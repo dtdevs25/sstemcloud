@@ -27,12 +27,26 @@ const calculateCRC16 = (data: string): string => {
 export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) => {
   const [copied, setCopied] = useState(false);
 
-  // Filtro de caracteres para o Pix (Apenas letras, números e espaços)
+  // Trava de scroll para evitar que a página pule
+  React.useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
+  // Filtro de caracteres para o Pix
   const clean = (str: string) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^A-Z0-9 ]/gi, "").toUpperCase();
 
-  // Payload Pix memorizado para evitar flicker e erros de CRC
+  // Payload Pix memorizado
   const pixPayload = useMemo(() => {
-    const key = "19991472282";
+    // Daniel, vou deixar esta lógica aqui como fallback, 
+    // mas assim que você me mandar seu código do banco, eu substituo por ele!
+    const key = "+5519991472282"; // Corrigido com prefixo internacional
     const name = "DANIEL PEREIRA DOS SANTOS";
     const city = "SAO PAULO";
     const amount = "160.00";
@@ -51,7 +65,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) =
     const country = formatField('58', 'BR');
     const nameField = formatField('59', clean(name).substring(0, 25));
     const cityField = formatField('60', clean(city).substring(0, 15));
-    const additionalData = formatField('62', formatField('05', '***'));
+    const additionalData = formatField('62', formatField('05', 'SSTEMCLOUD')); // TxID mais estável
 
     const payload = '000201' + merchantAccount + mcc + currency + amountField + country + nameField + cityField + additionalData + '6304';
     return payload + calculateCRC16(payload);
@@ -62,6 +76,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) =
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
   const handleHotmartRedirect = () => {
     window.open('https://pay.hotmart.com/G31174149Q?off=om2yn0en&checkoutMode=10&offDiscount=S%C3%93HOJE&src=paginadevendas', '_blank');
   };
@@ -71,12 +86,13 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) =
     window.open(`https://wa.me/5519991472282?text=${message}`, '_blank');
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-md">
-      <div className="relative bg-white rounded-[2rem] shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[90vh] sm:max-h-[85vh] animate-fadeIn">
-
+    <div
+      className={`fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-md transition-all duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+    >
+      <div
+        className={`relative bg-white rounded-[2rem] shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[90vh] sm:max-h-[85vh] transition-transform duration-500 ${isOpen ? 'translate-y-0 scale-100' : 'translate-y-20 scale-95'}`}
+      >
         {/* Header Azul - Ultra Compacto */}
         <div className="bg-blue-600 py-3 px-6 flex justify-between items-center text-white shrink-0">
           <p className="text-white font-bold text-sm uppercase tracking-tight">Pagamento Seguro</p>
@@ -147,6 +163,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) =
 
               <div className="flex flex-col items-center justify-center mb-6 bg-slate-50 p-6 rounded-[2rem] border border-dashed border-slate-300">
                 <div className="bg-white p-3 rounded-2xl shadow-sm mb-4">
+                  {/* Estabilizado: a imagem não recarrega do zero ao abrir o modal */}
                   <img
                     src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(pixPayload)}`}
                     alt="QR Code Pix"
