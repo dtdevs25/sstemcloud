@@ -53,94 +53,94 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) =
         </div>
 
         {/* Body */}
-        <div className="p-4 sm:p-5 md:p-4 overflow-y-auto bg-slate-50 custom-scrollbar">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+        <div className="p-3 md:p-4 overflow-y-auto bg-slate-50 custom-scrollbar">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5">
 
             {/* OPÇÃO 1: HOTMART */}
-            <div className="bg-white p-5 sm:p-6 md:p-4 rounded-3xl border border-slate-200 shadow-sm flex flex-col border-b-4 border-b-orange-200">
-              <div className="mb-4 md:mb-2 flex justify-center h-16 md:h-16">
+            <div className="bg-white p-4 md:p-4 rounded-3xl border border-slate-200 shadow-sm flex flex-col border-b-4 border-b-orange-200">
+              <div className="mb-3 md:mb-2 flex justify-center h-14 md:h-16">
                 <img src="https://i.pinimg.com/736x/63/bb/dc/63bbdca7af4430b13d271eab29287dcb.jpg" alt="Hotmart" className="h-full w-full object-contain scale-[1.35] md:scale-[1.4] origin-center" />
               </div>
 
-              <div className="flex items-center gap-4 md:gap-3 mb-5 md:mb-3 mt-2 md:mt-1">
-                <div className="bg-orange-100 p-3 md:p-2 rounded-2xl text-orange-600">
-                  <CreditCard size={24} className="md:w-5 md:h-5" />
+              <div className="flex items-center gap-3 md:gap-3 mb-4 md:mb-3 mt-1 md:mt-1">
+                <div className="bg-orange-100 p-2 md:p-2 rounded-2xl text-orange-600">
+                  <CreditCard size={20} className="md:w-5 md:h-5" />
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-lg md:text-base text-slate-800 leading-tight">Cartão ou Boleto</h3>
-                  <p className="text-[11px] md:text-[10px] text-slate-500 font-black uppercase tracking-widest">Plataforma Hotmart</p>
+                  <h3 className="font-extrabold text-base md:text-base text-slate-800 leading-tight">Cartão ou Boleto</h3>
+                  <p className="text-[10px] md:text-[10px] text-slate-500 font-black uppercase tracking-widest">Plataforma Hotmart</p>
                 </div>
               </div>
 
-              <div className="space-y-3 md:space-y-1.5 mb-6 md:mb-3 flex-1">
-                <div className="flex items-center gap-3 md:gap-2 text-base md:text-sm text-slate-600 font-medium">
-                  <CheckCircle size={18} className="text-green-500 md:w-4 md:h-4" />
+              <div className="space-y-2 md:space-y-1.5 mb-4 md:mb-3 flex-1">
+                <div className="flex items-center gap-2 md:gap-2 text-sm md:text-sm text-slate-600 font-medium">
+                  <CheckCircle size={16} className="text-green-500 md:w-4 md:h-4" />
                   <span>Parcelamento em até 12x</span>
                 </div>
-                <div className="flex items-center gap-3 md:gap-2 text-base md:text-sm text-slate-600 font-medium">
-                  <CheckCircle size={18} className="text-green-500 md:w-4 md:h-4" />
+                <div className="flex items-center gap-2 md:gap-2 text-sm md:text-sm text-slate-600 font-medium">
+                  <CheckCircle size={16} className="text-green-500 md:w-4 md:h-4" />
                   <span>Liberação automática</span>
                 </div>
               </div>
 
               <Button
                 onClick={handleHotmartRedirect}
-                className="w-full bg-orange-600 hover:bg-orange-700 text-white font-black py-4 md:py-2.5 rounded-2xl md:rounded-xl shadow-lg shadow-orange-100 flex items-center justify-center gap-2 text-base md:text-sm transition-all active:scale-95 mt-auto"
+                className="w-full bg-orange-600 hover:bg-orange-700 text-white font-black py-3 md:py-2.5 rounded-xl md:rounded-xl shadow-lg shadow-orange-100 flex items-center justify-center gap-2 text-sm md:text-sm transition-all active:scale-95 mt-auto"
               >
-                IR PARA HOTMART <ExternalLink size={18} className="md:w-4 md:h-4" />
+                IR PARA HOTMART <ExternalLink size={16} className="md:w-4 md:h-4" />
               </Button>
             </div>
 
             {/* OPÇÃO 2: PIX DIRETO */}
-            <div className="bg-white p-5 sm:p-6 md:p-4 rounded-3xl border-2 border-green-500 shadow-xl relative flex flex-col overflow-hidden">
-              <div className="absolute top-0 right-0 bg-green-500 text-white text-xs md:text-[10px] font-black px-4 md:px-3 py-1.5 md:py-1 rounded-bl-2xl uppercase tracking-tighter">
+            <div className="bg-white p-4 md:p-4 rounded-3xl border-2 border-green-500 shadow-xl relative flex flex-col overflow-hidden">
+              <div className="absolute top-0 right-0 bg-green-500 text-white text-[10px] md:text-[10px] font-black px-3 py-1 rounded-bl-2xl uppercase tracking-tighter">
                 Preço Promocional
               </div>
 
-              <div className="flex items-center gap-4 md:gap-3 mb-5 md:mb-3 mt-2 md:mt-1">
-                <div className="bg-green-100 p-3 md:p-2 rounded-2xl text-green-600">
-                  <QrCode size={24} className="md:w-5 md:h-5" />
+              <div className="flex items-center gap-3 mb-4 md:mb-3 mt-1 md:mt-1">
+                <div className="bg-green-100 p-2 rounded-2xl text-green-600">
+                  <QrCode size={20} className="md:w-5 md:h-5" />
                 </div>
                 <div className="flex flex-col">
-                  <h3 className="font-extrabold text-lg md:text-base text-slate-800 leading-tight">Pix Direto</h3>
-                  <p className="text-sm md:text-xs text-green-600 font-black uppercase flex items-center gap-1">
-                    <Zap size={14} className="md:w-2.5 md:h-2.5" fill="currentColor" /> R$ 157,00 À VISTA
+                  <h3 className="font-extrabold text-base md:text-base text-slate-800 leading-tight">Pix Direto</h3>
+                  <p className="text-xs md:text-xs text-green-600 font-black uppercase flex items-center gap-1">
+                    <Zap size={10} className="md:w-2.5 md:h-2.5" fill="currentColor" /> R$ 157,00 À VISTA
                   </p>
                 </div>
               </div>
 
-              <div className="flex flex-col items-center justify-center mb-6 md:mb-3 bg-slate-50 p-5 md:p-3 rounded-[2rem] md:rounded-[1.5rem] border border-dashed border-slate-300">
-                <div className="bg-white p-3 md:p-1.5 rounded-2xl shadow-sm mb-3 md:mb-2">
+              <div className="flex flex-col items-center justify-center mb-4 md:mb-3 bg-slate-50 p-3 md:p-3 rounded-[1.5rem] md:rounded-[1.5rem] border border-dashed border-slate-300">
+                <div className="bg-white p-2 md:p-1.5 rounded-xl shadow-sm mb-2">
                   {/* Estabilizado: a imagem não recarrega do zero ao abrir o modal */}
                   <img
                     src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(paymentLink)}`}
                     alt="QR Code Pagamento"
-                    className="w-32 h-32 md:w-28 md:h-28 mix-blend-multiply"
+                    className="w-28 h-28 md:w-28 md:h-28 mix-blend-multiply"
                   />
                 </div>
 
                 <div className="text-center w-full">
-                  <p className="text-base md:text-sm font-black text-slate-800 leading-tight">DANIEL PEREIRA DOS SANTOS</p>
-                  <p className="text-xs md:text-[10px] text-slate-500 font-bold uppercase mt-1 md:mt-0.5">Mercado Pago</p>
+                  <p className="text-sm md:text-sm font-black text-slate-800 leading-tight">DANIEL PEREIRA DOS SANTOS</p>
+                  <p className="text-[10px] md:text-[10px] text-slate-500 font-bold uppercase mt-0.5 md:mt-0.5">Mercado Pago</p>
                 </div>
               </div>
 
-              <div className="space-y-3 md:space-y-2 mt-auto">
+              <div className="space-y-2 md:space-y-2 mt-auto">
                 <a
                   href={paymentLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full bg-slate-800 hover:bg-slate-900 text-white py-4 md:py-2.5 rounded-2xl md:rounded-xl font-black text-base md:text-sm transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg"
+                  className="w-full bg-slate-800 hover:bg-slate-900 text-white py-3 md:py-2.5 rounded-xl md:rounded-xl font-black text-sm md:text-sm transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg"
                 >
-                  <ExternalLink size={18} className="md:w-4 md:h-4" />
+                  <ExternalLink size={16} className="md:w-4 md:h-4" />
                   ACESSAR LINK PARA PAGAR
                 </a>
 
                 <button
                   onClick={handleWhatsAppConfirm}
-                  className="w-full bg-green-500 hover:bg-green-600 text-white font-black py-4 md:py-2.5 rounded-2xl md:rounded-xl shadow-lg shadow-green-100 flex items-center justify-center gap-2 text-base md:text-sm transition-all active:scale-95"
+                  className="w-full bg-green-500 hover:bg-green-600 text-white font-black py-3 md:py-2.5 rounded-xl md:rounded-xl shadow-lg shadow-green-100 flex items-center justify-center gap-2 text-sm md:text-sm transition-all active:scale-95"
                 >
-                  <MessageCircle size={20} className="md:w-4 md:h-4" />
+                  <MessageCircle size={18} className="md:w-4 md:h-4" />
                   ENVIAR COMPROVANTE
                 </button>
               </div>
