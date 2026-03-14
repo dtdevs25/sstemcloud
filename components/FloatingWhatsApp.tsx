@@ -66,7 +66,6 @@ export const FloatingWhatsApp: React.FC = () => {
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Digite sua mensagem..." 
                   className="w-full pl-4 pr-10 py-3 bg-gray-100 rounded-full text-base focus:outline-none focus:ring-1 focus:ring-[#075e54]"
-                  autoFocus
                  />
                  <Smile className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 cursor-pointer hover:text-gray-600" />
               </div>
