@@ -86,6 +86,11 @@ export const FloatingWhatsApp: React.FC = () => {
         className="group relative flex items-center justify-center focus:outline-none"
         aria-label="Fale conosco no WhatsApp"
       >
+        {/* Efeito Pulsante - Iniciando menor para o radar não expandir fora do limite da tela e resetar o celular */}
+        {!isOpen && (
+          <span className="absolute inline-flex h-[80%] w-[80%] rounded-full bg-green-400 opacity-60 animate-ping"></span>
+        )}
+        
         <div className={`relative p-4 rounded-full shadow-lg transition-transform duration-300 flex items-center justify-center ${isOpen ? 'bg-gray-600 rotate-90' : 'bg-green-500 hover:bg-green-600 hover:scale-[1.05]'}`}>
            {isOpen ? <X className="h-8 w-8 text-white transition-opacity" /> : <MessageCircle className="h-8 w-8 text-white transition-opacity" />}
         </div>
