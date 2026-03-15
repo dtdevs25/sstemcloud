@@ -3,15 +3,20 @@ import { MessageCircle, Send, X, Smile, Cloud } from 'lucide-react';
 
 export const FloatingWhatsApp: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [message, setMessage] = useState('SST em Cloud');
+  const [message, setMessage] = useState('');
 
   const handleSend = (e?: React.FormEvent) => {
     e?.preventDefault();
-    const text = encodeURIComponent(message.trim() || "SST em Cloud");
+    const userText = message.trim();
+    const finalMessage = userText 
+      ? `Olá, vim através do site do SST em Cloud. ${userText}` 
+      : "Olá, vim através do site do SST em Cloud.";
+    
+    const text = encodeURIComponent(finalMessage);
     const phone = '5519991472282'; // Número atualizado
     window.open(`https://wa.me/${phone}?text=${text}`, '_blank');
     setIsOpen(false);
-    // Removemos setMessage('') para que se reabrir a bolinha ele mantenha o preenchimento!
+    setMessage('');
   };
 
   return (
@@ -50,7 +55,7 @@ export const FloatingWhatsApp: React.FC = () => {
             <div className="bg-white p-4 rounded-lg rounded-tl-none shadow-sm self-start max-w-[85%]">
               <p className="text-base text-gray-800 leading-relaxed">
                 Olá! 👋 <br/>
-                Como podemos ajudar você hoje? Apenas envie a mensagem abaixo como está para iniciar seu atendimento no WhatsApp!
+                Como podemos ajudar você hoje? Digite sua dúvida abaixo que te responderemos no WhatsApp!
               </p>
               <span className="text-[11px] text-gray-400 float-right mt-1">Agora</span>
             </div>
@@ -86,9 +91,9 @@ export const FloatingWhatsApp: React.FC = () => {
         className="group relative flex items-center justify-center focus:outline-none"
         aria-label="Fale conosco no WhatsApp"
       >
-        {/* Efeito Pulsante - Iniciando menor para o radar não expandir fora do limite da tela e resetar o celular */}
+        {/* Efeito Pulsante - Restaurado para tamanho total, bugs evadidos pelo overflow global Hidden */}
         {!isOpen && (
-          <span className="absolute inline-flex h-[80%] w-[80%] rounded-full bg-green-400 opacity-60 animate-ping"></span>
+          <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 animate-ping"></span>
         )}
         
         <div className={`relative p-4 rounded-full shadow-lg transition-transform duration-300 flex items-center justify-center ${isOpen ? 'bg-gray-600 rotate-90' : 'bg-green-500 hover:bg-green-600 hover:scale-[1.05]'}`}>
