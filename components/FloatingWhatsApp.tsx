@@ -14,7 +14,9 @@ export const FloatingWhatsApp: React.FC = () => {
     
     const text = encodeURIComponent(finalMessage);
     const phone = '5519991472282'; // Número atualizado
-    window.open(`https://wa.me/${phone}?text=${text}`, '_blank');
+    
+    // api.whatsapp.com funciona melhor no mobile app nativo do que o wa.me para injetar o texto!
+    window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${text}`, '_blank');
     setIsOpen(false);
     setMessage('');
   };
@@ -91,9 +93,9 @@ export const FloatingWhatsApp: React.FC = () => {
         className="group relative flex items-center justify-center focus:outline-none"
         aria-label="Fale conosco no WhatsApp"
       >
-        {/* Efeito Pulsante - Restaurado para tamanho total, bugs evadidos pelo overflow global Hidden */}
+        {/* Efeito Pulsante - Controlado a 75% para não estourar os limites da tela do celular (causa o recálculo infinito) */}
         {!isOpen && (
-          <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 animate-ping"></span>
+          <span className="absolute inline-flex h-[75%] w-[75%] rounded-full bg-green-400 opacity-75 animate-ping"></span>
         )}
         
         <div className={`relative p-4 rounded-full shadow-lg transition-transform duration-300 flex items-center justify-center ${isOpen ? 'bg-gray-600 rotate-90' : 'bg-green-500 hover:bg-green-600 hover:scale-[1.05]'}`}>

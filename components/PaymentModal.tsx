@@ -23,7 +23,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) =
 
   const handleWhatsAppConfirm = () => {
     const message = encodeURIComponent("Olá Daniel! Realizei o pagamento via Pix de R$ 157,00 para o SST em Cloud. Segue o comprovante.");
-    window.open(`https://wa.me/5519991472282?text=${message}`, '_blank');
+    const phone = '5519991472282';
+    window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${message}`, '_blank');
   };
 
   return (
