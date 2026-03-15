@@ -3,15 +3,15 @@ import { MessageCircle, Send, X, Smile, Cloud } from 'lucide-react';
 
 export const FloatingWhatsApp: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState('SST em Cloud');
 
   const handleSend = (e?: React.FormEvent) => {
     e?.preventDefault();
-    const text = encodeURIComponent(message || "Olá! Gostaria de saber mais sobre o SST em Cloud.");
+    const text = encodeURIComponent(message.trim() || "SST em Cloud");
     const phone = '5519991472282'; // Número atualizado
     window.open(`https://wa.me/${phone}?text=${text}`, '_blank');
     setIsOpen(false);
-    setMessage('');
+    // Removemos setMessage('') para que se reabrir a bolinha ele mantenha o preenchimento!
   };
 
   return (
@@ -50,7 +50,7 @@ export const FloatingWhatsApp: React.FC = () => {
             <div className="bg-white p-4 rounded-lg rounded-tl-none shadow-sm self-start max-w-[85%]">
               <p className="text-base text-gray-800 leading-relaxed">
                 Olá! 👋 <br/>
-                Como podemos ajudar você hoje? Digite sua dúvida abaixo que te responderemos no WhatsApp!
+                Como podemos ajudar você hoje? Apenas envie a mensagem abaixo como está para iniciar seu atendimento no WhatsApp!
               </p>
               <span className="text-[11px] text-gray-400 float-right mt-1">Agora</span>
             </div>
