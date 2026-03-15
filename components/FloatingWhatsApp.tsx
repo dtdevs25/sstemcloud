@@ -19,7 +19,7 @@ export const FloatingWhatsApp: React.FC = () => {
       
       {/* Janela de Chat - Reduzida para w-[340px] */}
       {isOpen && (
-        <div className="mb-4 w-[90vw] sm:w-[340px] bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden animate-fadeIn origin-bottom-right transition-all">
+        <div className="mb-4 w-[90vw] sm:w-[340px] bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden animate-fadeIn origin-bottom-right">
           
           {/* Header */}
           <div className="bg-[#075e54] p-5 flex justify-between items-center text-white">
@@ -86,8 +86,8 @@ export const FloatingWhatsApp: React.FC = () => {
         className="group relative flex items-center justify-center focus:outline-none"
         aria-label="Fale conosco no WhatsApp"
       >
-        <div className={`relative p-4 rounded-full shadow-lg transition-all duration-300 flex items-center justify-center ${isOpen ? 'bg-gray-600 rotate-90' : 'bg-green-500 hover:bg-green-600 hover:scale-110'}`}>
-           {isOpen ? <X className="h-8 w-8 text-white" /> : <MessageCircle className="h-8 w-8 text-white" />}
+        <div className={`relative p-4 rounded-full shadow-lg transition-transform duration-300 flex items-center justify-center ${isOpen ? 'bg-gray-600 rotate-90' : 'bg-green-500 hover:bg-green-600 hover:scale-[1.05]'}`}>
+           {isOpen ? <X className="h-8 w-8 text-white transition-opacity" /> : <MessageCircle className="h-8 w-8 text-white transition-opacity" />}
         </div>
 
         {!isOpen && (

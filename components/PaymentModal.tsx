@@ -10,17 +10,9 @@ interface PaymentModalProps {
 
 
 export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) => {
-  // Trava de scroll para evitar que a página pule
-  React.useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [isOpen]);
+  // Removido o bloqueio de overflow-y do body pois causa um loop
+  // infinito de re-cálculo de altura da viewport e esconde/mostra barra de URL 
+  // no mobile, fazendo o modal e o whatsapp ficarem pulando loucamente.
 
   // Link de pagamento do Mercado Pago
   const paymentLink = "https://mpago.la/1Ba138T";
@@ -36,10 +28,10 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) =
 
   return (
     <div
-      className={`fixed inset-0 z-[100] flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-md transition-all duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+      className={`fixed top-0 left-0 w-full h-[100dvh] z-[100] flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
     >
       <div
-        className={`relative bg-white rounded-[2rem] shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[95%] sm:max-h-[90%] transition-transform duration-500 ${isOpen ? 'translate-y-0 scale-100' : 'translate-y-20 scale-95'}`}
+        className={`relative bg-white rounded-[2rem] shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[85dvh] sm:max-h-[90dvh] transition-transform duration-500 ease-out ${isOpen ? 'translate-y-0 scale-100' : 'translate-y-12 scale-95'}`}
       >
         {/* Header Azul - Ultra Compacto */}
         <div className="bg-blue-600 py-2.5 px-5 flex justify-between items-center text-white shrink-0">
